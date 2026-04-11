@@ -23,9 +23,12 @@ class Settings(BaseSettings):
     ingest_batch_size: int = 50
     max_results_per_source: int = 20
 
-    # Week 4: Gemma integration
+    # Supabase
+    supabase_jwt_secret: str = ""
+
+    # AI model (Google AI Studio)
     google_ai_api_key: str = ""
-    gemma_model: str = "gemma-4-26b-a4b-it"
+    ai_model: str = "gemini-2.0-flash"
     summary_max_tokens: int = 500
     summary_enabled: bool = True
 

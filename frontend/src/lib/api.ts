@@ -6,6 +6,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const client = axios.create({ baseURL: API_URL, timeout: 60_000 });
 
+client.interceptors.request.use(async (config) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    config.headers.Authorization = `Bearer ${session.access_token}`;
+  }
+  return config;
+});
+
 client.interceptors.response.use(
   (response) => response,
   (error) => {

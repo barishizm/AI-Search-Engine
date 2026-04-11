@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 # Lightweight model for fast classification calls
-FAST_MODEL = "gemma-3-4b-it"
+FAST_MODEL = "gemini-2.0-flash"
 
 SYSTEM_PROMPT = (
     "You are a helpful AI assistant. Answer the user's question directly and "
@@ -235,6 +235,6 @@ def get_gemma_service() -> GemmaService:
         settings = get_settings()
         _service = GemmaService(
             api_key=settings.google_ai_api_key,
-            model=settings.gemma_model,
+            model=settings.ai_model,
         )
     return _service

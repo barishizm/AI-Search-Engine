@@ -1,8 +1,11 @@
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
+from app.auth import get_current_user
 from app.config import get_settings
 from app.models.schemas import SearchRequest, SearchResponse, SearchResult
 from app.services.embedder import Embedder, get_embedder
@@ -13,32 +16,36 @@ from app.services.vector_store import VectorStore, get_vector_store
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 @router.post("/search/", response_model=SearchResponse)
+@limiter.limit("20/minute")
 async def search(
-    request: SearchRequest,
+    request: Request,
+    body: SearchRequest,
     summary: bool = Query(default=True),
+    user_id: str = Depends(get_current_user),
     embedder: Embedder = Depends(get_embedder),
     vector_store: VectorStore = Depends(get_vector_store),
     gemma_service: GemmaService = Depends(get_gemma_service),
 ) -> SearchResponse:
     # Run intent detection and source selection concurrently
     search_needed, selected = await asyncio.gather(
-        gemma_service.needs_search(request.query),
-        gemma_service.select_sources(request.query),
+        gemma_service.needs_search(body.query),
+        gemma_service.select_sources(body.query),
     )
 
     if not search_needed:
-        logger.info("Intent detection: no search needed for query=%r", request.query)
+        logger.info("Intent detection: no search needed for query=%r", body.query)
         ai_summary = None
         settings = get_settings()
         if summary and settings.summary_enabled:
             ai_summary = await gemma_service.summarize(
-                request.query, [], thinking=request.thinking, search_performed=False,
+                body.query, [], thinking=body.thinking, search_performed=False,
             )
         return SearchResponse(
-            query=request.query,
+            query=body.query,
             results=[],
             total=0,
             ai_summary=ai_summary,
@@ -52,24 +59,24 @@ async def search(
     }
 
     try:
-        logger.info("Selected sources for query=%r: %s", request.query, selected)
+        logger.info("Selected sources for query=%r: %s", body.query, selected)
         ingest_tasks = [
-            ingest_source(SOURCE_MAP[s], request.query)
+            ingest_source(SOURCE_MAP[s], body.query)
             for s in selected if s in SOURCE_MAP
         ]
         if ingest_tasks:
             await asyncio.gather(*ingest_tasks)
     except Exception:
-        logger.exception("Ingestion failed for query=%s", request.query)
+        logger.exception("Ingestion failed for query=%s", body.query)
 
     try:
-        query_embedding = embedder.embed(request.query)
+        query_embedding = embedder.embed(body.query)
         raw = vector_store.query(
             query_embedding=query_embedding,
-            top_k=request.top_k,
+            top_k=body.top_k,
         )
     except Exception:
-        logger.exception("Search query failed for: %s", request.query)
+        logger.exception("Search query failed for: %s", body.query)
         raise HTTPException(status_code=500, detail="Internal search error")
 
     try:
@@ -78,7 +85,7 @@ async def search(
         metadatas = raw["metadatas"][0]
         distances = raw["distances"][0]
     except (KeyError, IndexError):
-        return SearchResponse(query=request.query, results=[], total=0, searched=True)
+        return SearchResponse(query=body.query, results=[], total=0, searched=True)
 
     results: list[SearchResult] = []
     for doc_id, content, metadata, distance in zip(
@@ -98,10 +105,10 @@ async def search(
     settings = get_settings()
     if results and summary and settings.summary_enabled:
         result_dicts = [r.model_dump() for r in results[:5]]
-        ai_summary = await gemma_service.summarize(request.query, result_dicts, thinking=request.thinking)
+        ai_summary = await gemma_service.summarize(body.query, result_dicts, thinking=body.thinking)
 
     return SearchResponse(
-        query=request.query,
+        query=body.query,
         results=results,
         total=len(results),
         ai_summary=ai_summary,

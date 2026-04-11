@@ -18,6 +18,7 @@ interface Message {
   summary: string | null;
   results: SearchResult[];
   thinking: boolean;
+  searched: boolean;
   status: "loading" | "done";
 }
 
@@ -65,6 +66,7 @@ export default function Home() {
         summary: null,
         results: [],
         thinking,
+        searched: false,
         status: "loading",
       };
 
@@ -80,6 +82,7 @@ export default function Home() {
                   ...m,
                   summary: response.ai_summary,
                   results: response.results || [],
+                  searched: response.searched,
                   status: "done" as const,
                 }
               : m,
@@ -141,6 +144,7 @@ export default function Home() {
           summary: m.ai_summary,
           results: m.results,
           thinking: m.thinking,
+          searched: false,
           status: "done" as const,
         })),
       );
@@ -224,6 +228,7 @@ export default function Home() {
                       summary={message.summary}
                       results={message.results}
                       status={message.status}
+                      searched={message.searched}
                     />
                   </div>
                 ))}

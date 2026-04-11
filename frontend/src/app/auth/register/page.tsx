@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import { Zap, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 export default function RegisterPage() {
@@ -12,6 +12,8 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,12 +64,15 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-[#212121] flex items-center justify-center px-4">
         <div className="w-full max-w-sm">
-          <div className="flex items-center justify-center gap-2 mb-8">
+          <Link
+            href="/"
+            className="flex items-center justify-center gap-2 mb-8 hover:opacity-80 transition-opacity"
+          >
             <Zap size={28} className="text-purple-400" />
             <span className="text-xl font-semibold text-white tracking-wide">
               Universal Search
             </span>
-          </div>
+          </Link>
           <div className="bg-[#2a2a2a] rounded-xl p-6 border border-white/5 text-center">
             <div className="text-3xl mb-3">✉️</div>
             <h2 className="text-lg font-medium text-white mb-2">
@@ -94,12 +99,15 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-[#212121] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
+        <Link
+          href="/"
+          className="flex items-center justify-center gap-2 mb-8 hover:opacity-80 transition-opacity"
+        >
           <Zap size={28} className="text-purple-400" />
           <span className="text-xl font-semibold text-white tracking-wide">
             Universal Search
           </span>
-        </div>
+        </Link>
 
         {/* Card */}
         <div className="bg-[#2a2a2a] rounded-xl p-6 border border-white/5">
@@ -128,28 +136,46 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm text-gray-400 mb-1.5">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-3 py-2.5 rounded-lg bg-[#333] border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
-                placeholder="Min. 8 characters"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-3 py-2.5 pr-10 rounded-lg bg-[#333] border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                  placeholder="Min. 8 characters"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label className="block text-sm text-gray-400 mb-1.5">
                 Confirm password
               </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full px-3 py-2.5 rounded-lg bg-[#333] border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
-                placeholder="Repeat your password"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  className="w-full px-3 py-2.5 pr-10 rounded-lg bg-[#333] border border-white/10 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500 transition-colors"
+                  placeholder="Repeat your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <button

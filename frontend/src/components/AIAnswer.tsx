@@ -8,6 +8,7 @@ interface AIAnswerProps {
   summary: string | null;
   results: SearchResult[];
   status: "loading" | "done";
+  searched: boolean;
 }
 
 /**
@@ -34,22 +35,13 @@ function parseSources(text: string): {
   return { cleanText, sourceNumbers };
 }
 
-export default function AIAnswer({ summary, results, status }: AIAnswerProps) {
+export default function AIAnswer({ summary, results, status, searched }: AIAnswerProps) {
   const [displayedText, setDisplayedText] = useState("");
   const [typingDone, setTypingDone] = useState(false);
   const [sourcesOpen, setSourcesOpen] = useState(false);
-  const [loadingText, setLoadingText] = useState<"dots" | "searching">("dots");
   const fullText = summary || "";
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-
-  useEffect(() => {
-    if (status === "loading") {
-      setLoadingText("dots");
-      const timer = setTimeout(() => setLoadingText("searching"), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [status]);
 
   useEffect(() => {
     setDisplayedText("");
@@ -102,18 +94,11 @@ export default function AIAnswer({ summary, results, status }: AIAnswerProps) {
         {/* Loading state */}
         {status === "loading" && (
           <div className="flex items-center gap-2 text-gray-400 text-sm py-2">
-            {loadingText === "dots" ? (
-              <span className="flex gap-1">
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
-              </span>
-            ) : (
-              <>
-                <span className="text-lg animate-pulse">⚡</span>
-                <span>Searching...</span>
-              </>
-            )}
+            <span className="flex gap-1">
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+            </span>
           </div>
         )}
 
@@ -139,6 +124,13 @@ export default function AIAnswer({ summary, results, status }: AIAnswerProps) {
             {!typingDone && (
               <span className="inline-block w-0.5 h-4 bg-purple-400 ml-0.5 align-middle animate-blink" />
             )}
+          </div>
+        )}
+
+        {/* Searched the web badge */}
+        {status === "done" && searched && (
+          <div className="mt-2 text-xs text-gray-500">
+            🌐 Searched the web
           </div>
         )}
 
