@@ -33,20 +33,10 @@ async def search(
 ) -> SearchResponse:
     body.query = sanitize_query(body.query)
 
-    # Run intent detection and source selection concurrently
-    search_needed, selected = await asyncio.gather(
-        gemma_service.needs_search(body.query),
-        gemma_service.select_sources(body.query),
-    )
-
-    if not search_needed:
-        logger.info("Intent detection: no search needed for query=%r", body.query)
-        ai_summary = None
-        settings = get_settings()
-        if summary and settings.summary_enabled:
-            ai_summary = await gemma_service.summarize(
-                body.query, [], thinking=body.thinking, search_performed=False,
-            )
+    if not body.search:
+        ai_summary = await gemma_service.summarize(
+            body.query, [], thinking=body.thinking, search_performed=False,
+        )
         return SearchResponse(
             query=body.query,
             results=[],
@@ -54,6 +44,8 @@ async def search(
             ai_summary=ai_summary,
             searched=False,
         )
+
+    selected = await gemma_service.select_sources(body.query)
 
     SOURCE_MAP = {
         "web": "brave_search",

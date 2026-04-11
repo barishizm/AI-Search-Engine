@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Zap } from "lucide-react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase";
 import { search, saveConversation, saveMessage, getMessages } from "@/lib/api";
@@ -11,6 +12,10 @@ import MessageBubble from "@/components/MessageBubble";
 import AIAnswer from "@/components/AIAnswer";
 import AuthButton from "@/components/auth/AuthButton";
 import Sidebar from "@/components/Sidebar";
+
+const Dither = dynamic(() => import("@/components/Dither/Dither"), {
+  ssr: false,
+});
 
 interface Message {
   id: string;
@@ -25,6 +30,7 @@ interface Message {
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -33,11 +39,15 @@ export default function Home() {
   // Listen for auth state
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setAuthLoading(false);
+    });
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setAuthLoading(false);
       if (!session?.user) {
         setMessages([]);
         setActiveConversationId(null);
@@ -56,8 +66,21 @@ export default function Home() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
+  const ensureConversation = useCallback(async (query: string) => {
+    if (!user) return null;
+
+    let convId = activeConversationId;
+    if (!convId) {
+      convId = await saveConversation(query.slice(0, 50), user.id);
+      setActiveConversationId(convId);
+      setSidebarRefreshKey((k) => k + 1);
+    }
+
+    return convId;
+  }, [user, activeConversationId]);
+
   const handleSearch = useCallback(
-    async (query: string, thinking: boolean) => {
+    async (query: string, thinking: boolean, performSearch: boolean) => {
       const id = Date.now().toString();
 
       const newMessage: Message = {
@@ -73,7 +96,7 @@ export default function Home() {
       setMessages((prev) => [...prev, newMessage]);
 
       try {
-        const response = await search(query, thinking);
+        const response = await search(query, thinking, performSearch);
 
         setMessages((prev) =>
           prev.map((m) =>
@@ -92,18 +115,17 @@ export default function Home() {
         // Persist to Supabase if logged in
         if (user) {
           try {
-            let convId = activeConversationId;
-            if (!convId) {
-              convId = await saveConversation(query.slice(0, 50), user.id);
-              setActiveConversationId(convId);
-              setSidebarRefreshKey((k) => k + 1);
-            }
-            await saveMessage(
+            const convId = await ensureConversation(query);
+            if (!convId) return;
+            const savedId = await saveMessage(
               convId,
               query,
               response.ai_summary,
               response.results || [],
               thinking,
+            );
+            setMessages((prev) =>
+              prev.map((m) => (m.id === id ? { ...m, id: savedId } : m)),
             );
           } catch (err) {
             console.error("Failed to save conversation:", err);
@@ -124,7 +146,7 @@ export default function Home() {
         );
       }
     },
-    [user, activeConversationId],
+    [user, ensureConversation],
   );
 
   const handleNewSearch = useCallback(() => {
@@ -144,7 +166,7 @@ export default function Home() {
           summary: m.ai_summary,
           results: m.results,
           thinking: m.thinking,
-          searched: false,
+          searched: m.results.length > 0,
           status: "done" as const,
         })),
       );
@@ -158,19 +180,98 @@ export default function Home() {
 
   const sidebarWidth = isLoggedIn && sidebarOpen ? 260 : 0;
 
+  // Show nothing while checking auth
+  if (authLoading) {
+    return <div className="min-h-screen bg-[#212121]" />;
+  }
+
+  // Landing page for unauthenticated users
+  if (!isLoggedIn) {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-black">
+        {/* Dither background */}
+        <div className="absolute inset-0 z-0">
+          <Dither
+            waveSpeed={0.04}
+            waveAmplitude={0.44}
+            waveFrequency={4.3}
+            colorNum={14.3}
+            pixelSize={2}
+            waveColor={[0.4, 0.2, 0.7]}
+            enableMouseInteraction={true}
+            mouseRadius={1}
+          />
+        </div>
+
+        {/* Top navigation */}
+        <nav className="relative z-10 flex items-center justify-between px-6 py-4">
+          <span className="text-sm font-medium text-white/70 tracking-wide">
+            Limited Search
+          </span>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/auth/login"
+              className="px-4 py-1.5 text-sm text-white/70 hover:text-white transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/auth/register"
+              className="px-4 py-1.5 text-sm rounded-lg bg-white/10 text-white/90 hover:bg-white/20 transition-colors"
+            >
+              Register
+            </Link>
+          </div>
+        </nav>
+
+        {/* Center content */}
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-140px)]">
+          <div className="flex flex-col items-center gap-6 px-6 py-12 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 max-w-lg w-full mx-4">
+            <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight text-center">
+              Limited Search
+            </h1>
+            <p className="text-white/60 text-center text-base sm:text-lg max-w-md">
+              Search across the web, films, and music — powered by AI
+            </p>
+            <div className="flex items-center gap-4 mt-2">
+              <Link
+                href="/auth/register"
+                className="px-6 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium transition-colors"
+              >
+                Get Started
+              </Link>
+              <Link
+                href="/auth/login"
+                className="px-6 py-2.5 rounded-lg border border-white/30 text-white hover:bg-white/10 font-medium transition-colors"
+              >
+                Sign In
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom text */}
+        <div className="relative z-10 pb-6 text-center">
+          <p className="text-xs text-white/30">
+            Powered by Gemini · Brave Search · TMDB · Spotify
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Authenticated chat interface
   return (
     <div className="min-h-screen bg-[#212121]">
       {/* Sidebar – only for logged-in users */}
-      {isLoggedIn && (
-        <Sidebar
-          userId={user.id}
-          activeConversationId={activeConversationId}
-          onSelectConversation={handleSelectConversation}
-          onNewSearch={handleNewSearch}
-          refreshKey={sidebarRefreshKey}
-          onOpenChange={setSidebarOpen}
-        />
-      )}
+      <Sidebar
+        userId={user.id}
+        activeConversationId={activeConversationId}
+        onSelectConversation={handleSelectConversation}
+        onNewSearch={handleNewSearch}
+        refreshKey={sidebarRefreshKey}
+        onOpenChange={setSidebarOpen}
+      />
 
       {/* Main area */}
       <div
@@ -187,11 +288,10 @@ export default function Home() {
             {/* Center – logo */}
             <button
               onClick={handleNewSearch}
-              className="flex items-center justify-center gap-2 text-gray-400 hover:text-purple-400 transition-colors"
+              className="flex items-center justify-center text-gray-400 hover:text-white transition-colors"
             >
-              <Zap size={22} className="text-purple-400" />
               <span className="text-base font-medium tracking-wide">
-                Universal Search
+                Limited-Search
               </span>
             </button>
             {/* Right – auth buttons */}
@@ -206,10 +306,9 @@ export default function Home() {
           <div className="max-w-3xl mx-auto px-4">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-                <div className="flex items-center gap-3">
-                  <Zap size={36} className="text-purple-400" />
+                <div className="flex items-center">
                   <h1 className="text-2xl font-semibold text-white">
-                    Universal Search
+                    Limited-Search
                   </h1>
                 </div>
                 <p className="text-gray-500 text-sm text-center max-w-md">

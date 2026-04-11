@@ -9,13 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@react-three/fiber": "^9.5.0",
+    "@react-three/postprocessing": "^3.0.4",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",
     "axios": "^1.15.0",
     "lucide-react": "^1.8.0",
     "next": "^16.2.3",
+    "postprocessing": "^6.39.0",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "three": "^0.168.0"
   },
   "devDependencies": {
     "@types/node": "^20",

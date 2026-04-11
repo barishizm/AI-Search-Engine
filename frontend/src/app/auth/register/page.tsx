@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Zap, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 export default function RegisterPage() {
@@ -66,11 +66,10 @@ export default function RegisterPage() {
         <div className="w-full max-w-sm">
           <Link
             href="/"
-            className="flex items-center justify-center gap-2 mb-8 hover:opacity-80 transition-opacity"
+            className="flex items-center justify-center mb-8 hover:opacity-80 transition-opacity"
           >
-            <Zap size={28} className="text-purple-400" />
             <span className="text-xl font-semibold text-white tracking-wide">
-              Universal Search
+              Limited-Search
             </span>
           </Link>
           <div className="bg-[#2a2a2a] rounded-xl p-6 border border-white/5 text-center">
@@ -101,11 +100,10 @@ export default function RegisterPage() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center justify-center gap-2 mb-8 hover:opacity-80 transition-opacity"
+          className="flex items-center justify-center mb-8 hover:opacity-80 transition-opacity"
         >
-          <Zap size={28} className="text-purple-400" />
           <span className="text-xl font-semibold text-white tracking-wide">
-            Universal Search
+            Limited-Search
           </span>
         </Link>
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Zap, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase";
 
 export default function LoginPage() {
@@ -51,11 +51,10 @@ export default function LoginPage() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center justify-center gap-2 mb-8 hover:opacity-80 transition-opacity"
+          className="flex items-center justify-center mb-8 hover:opacity-80 transition-opacity"
         >
-          <Zap size={28} className="text-purple-400" />
           <span className="text-xl font-semibold text-white tracking-wide">
-            Universal Search
+            Limited-Search
           </span>
         </Link>
 

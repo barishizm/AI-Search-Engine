@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Universal AI Search",
-  description: "Search across web, films, and music with AI",
+  title: "Limited Search",
+  description: "Limited Search for web, films, and music with AI",
 };
 
 export default function RootLayout({

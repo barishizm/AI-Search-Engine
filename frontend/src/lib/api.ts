@@ -17,7 +17,7 @@ client.interceptors.request.use(async (config) => {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (process.env.NODE_ENV === "development") {
+    if (process.env.NODE_ENV === "development" && error.response?.status !== 401) {
       console.error("[API Error]", error.response?.status, error.message);
     }
     return Promise.reject(error);
@@ -27,10 +27,12 @@ client.interceptors.response.use(
 export async function search(
   query: string,
   thinking: boolean = false,
+  performSearch: boolean = false,
 ): Promise<SearchResponse> {
   const { data } = await client.post<SearchResponse>("/search/", {
     query,
     thinking,
+    search: performSearch,
   });
   return data;
 }
@@ -73,14 +75,18 @@ export async function saveMessage(
   aiSummary: string | null,
   results: unknown[],
   thinking: boolean,
-): Promise<void> {
-  const { error } = await supabase.from("messages").insert({
-    conversation_id: conversationId,
-    query,
-    ai_summary: aiSummary,
-    results,
-    thinking,
-  });
+): Promise<string> {
+  const { data, error } = await supabase
+    .from("messages")
+    .insert({
+      conversation_id: conversationId,
+      query,
+      ai_summary: aiSummary,
+      results,
+      thinking,
+    })
+    .select("id")
+    .single();
 
   if (error) throw error;
 
@@ -89,6 +95,8 @@ export async function saveMessage(
     .from("conversations")
     .update({ updated_at: new Date().toISOString() })
     .eq("id", conversationId);
+
+  return data.id;
 }
 
 export async function getConversations(

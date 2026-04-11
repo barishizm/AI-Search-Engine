@@ -139,7 +139,7 @@ export default function AIAnswer({ summary, results, status, searched }: AIAnswe
           <p className="text-sm text-gray-400">Here are the results I found:</p>
         )}
 
-        {status === "done" && !fullText && results.length === 0 && (
+        {status === "done" && !fullText && results.length === 0 && searched && (
           <p className="text-sm text-gray-400">No results found. Try a different query.</p>
         )}
 
