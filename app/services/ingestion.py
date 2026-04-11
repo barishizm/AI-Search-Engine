@@ -27,6 +27,11 @@ SOURCE_FACTORIES = {
 }
 
 
+async def ingest_web(query: str) -> dict:
+    """Fast path: ingest only Brave Search results for a query."""
+    return await ingest_source("brave_search", query)
+
+
 async def ingest_source(source_name: str, query: str) -> dict:
     settings = get_settings()
 

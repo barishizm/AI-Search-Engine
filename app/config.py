@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     debug: bool = False
     chroma_persist_dir: str = "./chroma_data"
     chroma_collection_name: str = "documents"
-    allowed_origins: list[str] = ["http://localhost:3000"]
+    allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:3001"]
     brave_search_api_key: str = ""
     tmdb_api_key: str = ""
     spotify_client_id: str = ""
@@ -23,7 +23,11 @@ class Settings(BaseSettings):
     ingest_batch_size: int = 50
     max_results_per_source: int = 20
 
-    # Week 4: Gemma integration fields go here
+    # Week 4: Gemma integration
+    google_ai_api_key: str = ""
+    gemma_model: str = "gemma-4-26b-a4b-it"
+    summary_max_tokens: int = 500
+    summary_enabled: bool = True
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
