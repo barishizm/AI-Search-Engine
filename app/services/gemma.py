@@ -52,7 +52,7 @@ class GemmaService:
 
         prompt = (
             f'Is this a search query or casual conversation?\n'
-            f'Query: "{query}"\n'
+            f'<user_query>{query}</user_query>\n'
             f'Reply YES if it needs internet search, NO if it\'s casual chat.\n'
             f'Answer:'
         )
@@ -109,7 +109,7 @@ Rules:
 - Always include "web" unless it's pure casual conversation
 - Return ONLY a JSON array, nothing else. Example: ["web", "film"]
 
-Query: "{query}"
+Query: <user_query>{query}</user_query>
 Answer:"""
 
         payload = {
@@ -158,7 +158,7 @@ Answer:"""
         thinking_prefix = "Think step by step carefully before answering.\n\n" if thinking else ""
 
         language_instruction = (
-            f'CRITICAL INSTRUCTION: You MUST detect the language of this query: "{query}"\n'
+            f'CRITICAL INSTRUCTION: You MUST detect the language of this query: <user_query>{query}</user_query>\n'
             "Then you MUST respond ENTIRELY in that exact same language.\n"
             "This rule applies to ALL languages without exception - Turkish, German, French, Spanish, "
             "Arabic, Japanese, Chinese, Korean, Russian, Portuguese, Italian, Dutch, Polish, or any other language.\n"
@@ -169,7 +169,7 @@ Answer:"""
             user_prompt = (
                 f"{language_instruction}\n\n"
                 f"{thinking_prefix}"
-                f'Answer this conversationally without search results: "{query}"\n'
+                f'Answer this conversationally without search results: <user_query>{query}</user_query>\n'
                 "Be friendly, direct, and concise (2-3 sentences max).\n"
                 "Do not show your reasoning. Do not use bullet points.\n\n"
                 f"{language_instruction}"
@@ -177,9 +177,9 @@ Answer:"""
         else:
             user_prompt = (
                 f"{language_instruction}\n\n"
-                f'{thinking_prefix}Search results for: "{query}"\n\n'
+                f'{thinking_prefix}Search results for: <user_query>{query}</user_query>\n\n'
                 f"{format_results(results)}\n\n"
-                f'Based only on the search results above, answer the question "{query}" in 2-3 sentences maximum.\n'
+                f'Based only on the search results above, answer the question <user_query>{query}</user_query> in 2-3 sentences maximum.\n'
                 "Be direct. Do not show your reasoning. Do not use bullet points. Do not repeat the question.\n"
                 'If results are not relevant, say: "No relevant results found for this query."\n\n'
                 f"{language_instruction}"
@@ -219,7 +219,7 @@ Answer:"""
                 answer_parts = [p["text"] for p in parts if not p.get("thought")]
                 return answer_parts[-1] if answer_parts else parts[-1]["text"]
         except httpx.HTTPStatusError as exc:
-            logger.error("Gemma API HTTP error %s: %s", exc.response.status_code, exc.response.text)
+            logger.error(f"Gemma API error: status={exc.response.status_code}")
             return None
         except (httpx.RequestError, KeyError, IndexError) as exc:
             logger.error("Gemma API request failed: %s", exc)

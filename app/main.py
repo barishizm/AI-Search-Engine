@@ -48,9 +48,12 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
+
+if not settings.debug:
+    app.openapi = lambda: {}  # Hide /docs in production
 
 app.include_router(search_router)
 app.include_router(ingest_router)

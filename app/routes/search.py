@@ -12,6 +12,7 @@ from app.services.embedder import Embedder, get_embedder
 from app.services.gemma import GemmaService, get_gemma_service
 from app.services.ingestion import ingest_source
 from app.services.vector_store import VectorStore, get_vector_store
+from app.utils.sanitize import sanitize_query
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,8 @@ async def search(
     vector_store: VectorStore = Depends(get_vector_store),
     gemma_service: GemmaService = Depends(get_gemma_service),
 ) -> SearchResponse:
+    body.query = sanitize_query(body.query)
+
     # Run intent detection and source selection concurrently
     search_needed, selected = await asyncio.gather(
         gemma_service.needs_search(body.query),
