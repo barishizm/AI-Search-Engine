@@ -1,5 +1,6 @@
 import axios from "axios";
-import { SearchResponse } from "@/types";
+import { SearchResponse, Conversation, ConversationMessage } from "@/types";
+import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -40,4 +41,70 @@ export async function checkHealth(): Promise<{
 }> {
   const { data } = await client.get("/health");
   return data;
+}
+
+// ── Supabase conversation persistence ──
+
+export async function saveConversation(
+  title: string,
+  userId: string,
+): Promise<string> {
+  const { data, error } = await supabase
+    .from("conversations")
+    .insert({ title, user_id: userId })
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  return data.id;
+}
+
+export async function saveMessage(
+  conversationId: string,
+  query: string,
+  aiSummary: string | null,
+  results: unknown[],
+  thinking: boolean,
+): Promise<void> {
+  const { error } = await supabase.from("messages").insert({
+    conversation_id: conversationId,
+    query,
+    ai_summary: aiSummary,
+    results,
+    thinking,
+  });
+
+  if (error) throw error;
+
+  // touch the conversation's updated_at
+  await supabase
+    .from("conversations")
+    .update({ updated_at: new Date().toISOString() })
+    .eq("id", conversationId);
+}
+
+export async function getConversations(
+  userId: string,
+): Promise<Conversation[]> {
+  const { data, error } = await supabase
+    .from("conversations")
+    .select("*")
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false });
+
+  if (error) throw error;
+  return data as Conversation[];
+}
+
+export async function getMessages(
+  conversationId: string,
+): Promise<ConversationMessage[]> {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+  return data as ConversationMessage[];
 }

@@ -23,12 +23,42 @@ async def search(
     vector_store: VectorStore = Depends(get_vector_store),
     gemma_service: GemmaService = Depends(get_gemma_service),
 ) -> SearchResponse:
-    try:
-        await asyncio.gather(
-            ingest_source("brave_search", request.query),
-            ingest_source("tmdb", request.query),
-            ingest_source("spotify", request.query),
+    # Run intent detection and source selection concurrently
+    search_needed, selected = await asyncio.gather(
+        gemma_service.needs_search(request.query),
+        gemma_service.select_sources(request.query),
+    )
+
+    if not search_needed:
+        logger.info("Intent detection: no search needed for query=%r", request.query)
+        ai_summary = None
+        settings = get_settings()
+        if summary and settings.summary_enabled:
+            ai_summary = await gemma_service.summarize(
+                request.query, [], thinking=request.thinking, search_performed=False,
+            )
+        return SearchResponse(
+            query=request.query,
+            results=[],
+            total=0,
+            ai_summary=ai_summary,
+            searched=False,
         )
+
+    SOURCE_MAP = {
+        "web": "brave_search",
+        "film": "tmdb",
+        "music": "spotify",
+    }
+
+    try:
+        logger.info("Selected sources for query=%r: %s", request.query, selected)
+        ingest_tasks = [
+            ingest_source(SOURCE_MAP[s], request.query)
+            for s in selected if s in SOURCE_MAP
+        ]
+        if ingest_tasks:
+            await asyncio.gather(*ingest_tasks)
     except Exception:
         logger.exception("Ingestion failed for query=%s", request.query)
 
@@ -48,7 +78,7 @@ async def search(
         metadatas = raw["metadatas"][0]
         distances = raw["distances"][0]
     except (KeyError, IndexError):
-        return SearchResponse(query=request.query, results=[], total=0)
+        return SearchResponse(query=request.query, results=[], total=0, searched=True)
 
     results: list[SearchResult] = []
     for doc_id, content, metadata, distance in zip(
@@ -75,4 +105,5 @@ async def search(
         results=results,
         total=len(results),
         ai_summary=ai_summary,
+        searched=True,
     )

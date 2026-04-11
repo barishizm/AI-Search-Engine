@@ -1,7 +1,10 @@
 import asyncio
 import hashlib
+import logging
 
 import httpx
+
+logger = logging.getLogger(__name__)
 
 BRAVE_SEARCH_URL = "https://api.search.brave.com/res/v1/web/search"
 MAX_RETRIES = 3
@@ -27,7 +30,13 @@ class BraveSearchSource:
         async with httpx.AsyncClient() as client:
             response = await self._request_with_retry(client, headers, params)
 
-        results = response.json().get("web", {}).get("results", [])
+        data = response.json()
+        results = data.get("web", {}).get("results", [])
+
+        if results:
+            first = results[0]
+            logger.info("Brave raw first result keys=%s title=%r url=%r",
+                        list(first.keys()), first.get("title"), first.get("url"))
 
         return [
             {
