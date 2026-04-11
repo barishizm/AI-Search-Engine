@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     chroma_persist_dir: str = "./chroma_data"
     chroma_collection_name: str = "documents"
     allowed_origins: list[str] = ["http://localhost:3000"]
+    brave_search_api_key: str = ""
+    tmdb_api_key: str = ""
+    spotify_client_id: str = ""
+    spotify_client_secret: str = ""
+    ingest_batch_size: int = 50
+    max_results_per_source: int = 20
 
     # Week 4: Gemma integration fields go here
 

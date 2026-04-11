@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.models.schemas import HealthResponse
+from app.routes.ingest import router as ingest_router
 from app.routes.search import router as search_router
 from app.services.vector_store import get_vector_store
 
@@ -45,12 +46,21 @@ app.add_middleware(
 )
 
 app.include_router(search_router)
+app.include_router(ingest_router)
 
 
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     store = get_vector_store()
+    try:
+        connected = store.is_healthy()
+        doc_count = store.count()
+    except Exception:
+        connected = False
+        doc_count = 0
     return HealthResponse(
-        status="healthy" if store.is_healthy() else "unhealthy",
+        status="healthy" if connected else "unhealthy",
         version=settings.app_version,
+        chroma_connected=connected,
+        doc_count=doc_count,
     )
