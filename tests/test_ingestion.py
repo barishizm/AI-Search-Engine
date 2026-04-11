@@ -5,6 +5,7 @@ import httpx
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.auth import get_current_user
 from app.main import app
 from app.services.sources.brave_search import BraveSearchSource
 from app.services.sources.spotify import SpotifySource
@@ -15,9 +16,20 @@ pytestmark = pytest.mark.anyio
 pytest_plugins = ('anyio',)
 
 
+async def mock_current_user():
+    return "test-user-id"
+
+
 @pytest.fixture(params=["asyncio"])
 def anyio_backend(request):
     return request.param
+
+
+@pytest.fixture(autouse=True)
+def override_auth():
+    app.dependency_overrides[get_current_user] = mock_current_user
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 def _make_response(status_code: int, json_data: dict) -> httpx.Response:

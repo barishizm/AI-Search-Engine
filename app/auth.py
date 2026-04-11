@@ -4,9 +4,9 @@ from jose import jwt, JWTError
 from app.config import get_settings
 
 
-async def get_current_user(authorization: str = Header(...)) -> str:
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Invalid authorization header")
+async def get_current_user(authorization: str | None = Header(default=None)) -> str:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
 
     token = authorization.replace("Bearer ", "", 1)
 
