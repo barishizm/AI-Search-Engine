@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
-# Lightweight model for fast classification calls
-FAST_MODEL = "gemini-2.0-flash"
+# Default fast model for intent classification calls
+FAST_MODEL = "gemini-3.1-flash-lite-preview"
 
 SYSTEM_PROMPT = (
     "You are a helpful AI assistant. Answer the user's question directly and "

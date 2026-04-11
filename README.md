@@ -7,7 +7,7 @@ The project has two main parts:
 - A FastAPI backend that fetches data from web, film, and music sources, embeds it with SentenceTransformers, stores it in ChromaDB, and returns ranked search results.
 - A Next.js frontend that handles authentication with Supabase, lets users search through a conversational interface, and stores conversation history.
 
-Despite the filename [`app/services/gemma.py`](app/services/gemma.py), the current AI integration is wired to Google's Generative Language API with Gemini models such as `gemini-2.0-flash`.
+Despite the filename [`app/services/gemma.py`](app/services/gemma.py), the current AI integration is wired to Google's Generative Language API with Gemini models such as `gemini-3.1-flash-lite-preview`.
 
 ## Features
 
@@ -69,7 +69,7 @@ ChromaDB persistent vector store
 | --- | --- |
 | Backend API | FastAPI, Uvicorn, SlowAPI |
 | Retrieval | ChromaDB, SentenceTransformers |
-| AI | Google Generative Language API (`gemini-2.0-flash or Gemma 4` by default) |
+| AI | Google Generative Language API (`gemini-3.1-flash-lite-preview` by default) |
 | External data | Brave Search, TMDB, Spotify |
 | Auth and persistence | Supabase Auth, Supabase Postgres |
 | Frontend | Next.js 16, React 19, TypeScript, Tailwind CSS |
@@ -152,7 +152,7 @@ MAX_RESULTS_PER_SOURCE=20
 SUPABASE_JWT_SECRET=your-supabase-jwt-secret
 
 GOOGLE_AI_API_KEY=
-AI_MODEL=gemini-2.0-flash
+AI_MODEL=gemini-3.1-flash-lite-preview
 SUMMARY_MAX_TOKENS=500
 SUMMARY_ENABLED=true
 
@@ -185,7 +185,7 @@ Useful local endpoints:
 | `MAX_RESULTS_PER_SOURCE` | No | `20` | Maximum raw documents fetched from each source connector. |
 | `SUPABASE_JWT_SECRET` | Yes | none | Used by the backend to validate Supabase access tokens on protected routes. |
 | `GOOGLE_AI_API_KEY` | Optional but recommended | empty | Enables intent detection, source selection, and AI summaries. |
-| `AI_MODEL` | No | `gemini-2.0-flash` | Model used for source selection and summaries. |
+| `AI_MODEL` | No | `gemini-3.1-flash-lite-preview` | Model used for source selection and summaries. |
 | `SUMMARY_MAX_TOKENS` | No | `500` | Output-token budget for summaries when `thinking=false`. |
 | `SUMMARY_ENABLED` | No | `true` | Enables summary generation on search responses. |
 | `BRAVE_SEARCH_API_KEY` | Optional | empty | Enables live web search ingestion. |

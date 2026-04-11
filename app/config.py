@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # AI model (Google AI Studio)
     google_ai_api_key: str = ""
-    ai_model: str = "gemini-2.0-flash"
+    ai_model: str = "gemini-3.1-flash-lite-preview"
     summary_max_tokens: int = 500
     summary_enabled: bool = True
 
