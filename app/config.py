@@ -33,6 +33,19 @@ class Settings(BaseSettings):
     summary_max_tokens: int = 500
     summary_enabled: bool = True
 
+    @field_validator("debug", mode="before")
+    @classmethod
+    def parse_debug(cls, v):
+        if isinstance(v, bool):
+            return v
+
+        normalized = str(v).strip().lower()
+        if normalized in {"1", "true", "yes", "on", "debug", "dev", "development"}:
+            return True
+        if normalized in {"0", "false", "no", "off", "release", "prod", "production"}:
+            return False
+        return v
+
     @field_validator("allowed_origins", mode="before")
     @classmethod
     def parse_origins(cls, v):
