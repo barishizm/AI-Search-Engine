@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     )
     yield
 
-
+# setup app and routes
 settings = get_settings()
 
 app = FastAPI(
