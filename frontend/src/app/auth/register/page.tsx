@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase";
+import Logo from "@/components/Logo";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -100,8 +101,9 @@ export default function RegisterPage() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center justify-center mb-8 hover:opacity-80 transition-opacity"
+          className="flex flex-col items-center justify-center gap-3 mb-8 hover:opacity-80 transition-opacity"
         >
+          <Logo size={48} />
           <span className="text-xl font-semibold text-white tracking-wide">
             Limited-Search
           </span>

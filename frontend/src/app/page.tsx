@@ -206,7 +206,7 @@ export default function Home() {
 
         {/* Top navigation */}
         <nav className="relative z-10 flex items-center justify-between px-6 py-4">
-          <Logo size={28} />
+          <Logo size={32} />
           <div className="flex items-center gap-3">
             <Link
               href="/auth/login"
@@ -226,7 +226,7 @@ export default function Home() {
         {/* Center content */}
         <div className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-140px)]">
           <div className="flex flex-col items-center gap-6 px-6 py-12 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 max-w-lg w-full mx-4">
-            <Logo size={80} />
+            <Logo size={72} />
             <p className="text-white/60 text-center text-base sm:text-lg max-w-md">
               Search across the web, films, and music — powered by AI
             </p>
@@ -287,7 +287,7 @@ export default function Home() {
               onClick={handleNewSearch}
               className="flex items-center justify-center text-gray-400 hover:text-white transition-colors"
             >
-              <Logo size={28} />
+              <Logo size={32} />
             </button>
             {/* Right – auth buttons */}
             <div className="flex justify-end">
