@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase";
 
@@ -62,11 +62,16 @@ function syncSessionTracking(session: Session, event?: AuthChangeEvent) {
 
 export default function SessionTimeoutManager() {
   const router = useRouter();
+  const pathname = usePathname();
   const isAuthenticatedRef = useRef(false);
   const signOutInProgressRef = useRef(false);
   const lastActivityWriteAtRef = useRef(0);
 
   useEffect(() => {
+    if (pathname.startsWith("/auth")) {
+      return;
+    }
+
     const supabase = createClient();
     let mounted = true;
 
@@ -220,7 +225,10 @@ export default function SessionTimeoutManager() {
 
         signOutInProgressRef.current = false;
         syncSessionTracking(session, event);
-        await checkSessionTimeout();
+
+        if (event !== "SIGNED_IN") {
+          await checkSessionTimeout();
+        }
       },
     );
 
@@ -236,7 +244,7 @@ export default function SessionTimeoutManager() {
         window.removeEventListener(eventName, recordActivity);
       });
     };
-  }, [router]);
+  }, [pathname, router]);
 
   return null;
 }
