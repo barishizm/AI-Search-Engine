@@ -1,0 +1,54 @@
+.logo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  color: #f5f5f5;
+  font-family: "Segoe UI", Arial, sans-serif;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.unPrefix {
+  display: inline-block;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateX(10px) rotateX(-80deg);
+  transform-origin: left center;
+  transition:
+    max-width 280ms ease,
+    opacity 180ms ease,
+    transform 280ms ease;
+  will-change: max-width, opacity, transform;
+}
+
+.logo:hover .unPrefix,
+.logo:focus-visible .unPrefix,
+.logo:focus-within .unPrefix {
+  max-width: 1.7em;
+  opacity: 1;
+  transform: translateX(0) rotateX(0deg);
+}
+
+.wordmarkBase {
+  display: inline-block;
+}
+
+.badge {
+  position: absolute;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f5f5;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  white-space: nowrap;
+}
