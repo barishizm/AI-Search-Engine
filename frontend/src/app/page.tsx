@@ -36,6 +36,8 @@ interface HealthState {
   ai_model: string;
 }
 
+const SIDEBAR_OPEN_STORAGE_KEY = "limited-search:sidebar-open";
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [user, setUser] = useState<User | null>(null);
@@ -217,10 +219,23 @@ export default function Home() {
     }
   }, []);
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === "undefined") {
+      return true;
+    }
+
+    return window.localStorage.getItem(SIDEBAR_OPEN_STORAGE_KEY) !== "false";
+  });
   const isLoggedIn = !!user;
 
   const sidebarWidth = isLoggedIn && sidebarOpen ? 260 : 0;
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      SIDEBAR_OPEN_STORAGE_KEY,
+      String(sidebarOpen),
+    );
+  }, [sidebarOpen]);
 
   // Show nothing while checking auth
   if (authLoading) {
@@ -308,6 +323,7 @@ export default function Home() {
         onSelectConversation={handleSelectConversation}
         onNewSearch={handleNewSearch}
         refreshKey={sidebarRefreshKey}
+        open={sidebarOpen}
         onOpenChange={setSidebarOpen}
       />
 

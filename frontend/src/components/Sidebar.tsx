@@ -11,7 +11,8 @@ interface SidebarProps {
   onSelectConversation: (id: string) => void;
   onNewSearch: () => void;
   refreshKey: number;
-  onOpenChange?: (open: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export default function Sidebar({
@@ -20,13 +21,11 @@ export default function Sidebar({
   onSelectConversation,
   onNewSearch,
   refreshKey,
+  open,
   onOpenChange,
 }: SidebarProps) {
-  const [open, setOpen] = useState(true);
-
   const toggleOpen = (value: boolean) => {
-    setOpen(value);
-    onOpenChange?.(value);
+    onOpenChange(value);
   };
   const [conversations, setConversations] = useState<Conversation[]>([]);
 
