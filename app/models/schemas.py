@@ -61,3 +61,5 @@ class HealthResponse(BaseModel):
     version: str
     chroma_connected: bool
     doc_count: int
+    ai_configured: bool
+    ai_model: str

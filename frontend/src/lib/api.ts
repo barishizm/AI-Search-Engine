@@ -48,6 +48,8 @@ export async function checkHealth(): Promise<{
   status: string;
   chroma_connected: boolean;
   doc_count: number;
+  ai_configured: boolean;
+  ai_model: string;
 }> {
   const { data } = await client.get("/health");
   return data;

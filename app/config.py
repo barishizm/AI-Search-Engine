@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 from typing import Union
 
@@ -33,6 +34,37 @@ class Settings(BaseSettings):
     summary_max_tokens: int = 500
     summary_enabled: bool = True
 
+    @field_validator("google_ai_api_key", mode="before")
+    @classmethod
+    def parse_google_ai_api_key(cls, v):
+        if isinstance(v, str) and v.strip():
+            return v.strip()
+
+        for env_name in (
+            "GOOGLE_AI_API_KEY",
+            "GEMINI_API_KEY",
+            "GOOGLE_API_KEY",
+            "GOOGLE_GENERATIVE_AI_API_KEY",
+        ):
+            candidate = os.getenv(env_name, "").strip()
+            if candidate:
+                return candidate
+
+        return ""
+
+    @field_validator("ai_model", mode="before")
+    @classmethod
+    def parse_ai_model(cls, v):
+        if isinstance(v, str) and v.strip():
+            return v.strip()
+
+        for env_name in ("AI_MODEL", "GEMINI_MODEL", "GOOGLE_AI_MODEL"):
+            candidate = os.getenv(env_name, "").strip()
+            if candidate:
+                return candidate
+
+        return "gemini-3.1-flash-lite-preview"
+
     @field_validator("debug", mode="before")
     @classmethod
     def parse_debug(cls, v):
@@ -56,6 +88,10 @@ class Settings(BaseSettings):
 
     def get_origins_list(self) -> list:
         return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
+
+    @property
+    def ai_configured(self) -> bool:
+        return bool(self.google_ai_api_key.strip())
 
 
 @lru_cache

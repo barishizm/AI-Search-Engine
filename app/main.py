@@ -28,6 +28,12 @@ async def lifespan(app: FastAPI):
         settings.app_version,
         count,
     )
+    if settings.ai_configured:
+        logger.info("Google AI configured with model=%s", settings.ai_model)
+    else:
+        logger.warning(
+            "Google AI API key not configured. Checked GOOGLE_AI_API_KEY, GEMINI_API_KEY, GOOGLE_API_KEY, and GOOGLE_GENERATIVE_AI_API_KEY.",
+        )
     yield
 
 # setup app and routes
@@ -73,4 +79,6 @@ def health() -> HealthResponse:
         version=settings.app_version,
         chroma_connected=connected,
         doc_count=doc_count,
+        ai_configured=settings.ai_configured,
+        ai_model=settings.ai_model,
     )
