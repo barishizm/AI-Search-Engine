@@ -1,0 +1,291 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(82, 82, 82, 0.3), transparent 40%),
+    #101010;
+}
+
+.shell {
+  width: 100%;
+  max-width: 420px;
+}
+
+.brandLink {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  text-decoration: none;
+}
+
+.brandText {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.formCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 2em 0.75em;
+  background: linear-gradient(180deg, #171717 0%, #111111 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 25px;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 0.4s ease-in-out,
+    border-color 0.4s ease-in-out,
+    box-shadow 0.4s ease-in-out;
+}
+
+@media (hover: hover) {
+  .formCard:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 32px 90px rgba(0, 0, 0, 0.55);
+  }
+}
+
+.heading {
+  margin: 1.8em 0 0;
+  text-align: center;
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.subheading {
+  margin: 0;
+  text-align: center;
+  color: #a3a3a3;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message {
+  border-radius: 16px;
+  padding: 0.85rem 1rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.errorMessage {
+  background: rgba(127, 29, 29, 0.32);
+  border: 1px solid rgba(248, 113, 113, 0.32);
+  color: #fca5a5;
+}
+
+.infoMessage {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e5e5e5;
+}
+
+.successMessage {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  color: #bbf7d0;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  border-radius: 25px;
+  padding: 0.72em 0.9em;
+  color: white;
+  background-color: #171717;
+  box-shadow: inset 2px 5px 10px rgb(5, 5, 5);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.field:focus-within {
+  box-shadow:
+    inset 2px 5px 10px rgb(5, 5, 5),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.fieldIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.inputField {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #d4d4d4;
+  font-size: 0.95rem;
+}
+
+.inputField::placeholder {
+  color: #7d7d7d;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.iconButton:hover {
+  color: #ffffff;
+}
+
+.buttonRow {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 1.4em;
+}
+
+.actionButton,
+.auxButton,
+.oauthButton {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  font: inherit;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.65em 1.4em;
+  border-radius: 10px;
+  background-color: #252525;
+  color: #ffffff;
+  text-decoration: none;
+  text-align: center;
+  flex: 1;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.actionButton:disabled,
+.auxButton:disabled,
+.oauthButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.auxButton {
+  align-self: center;
+  margin-bottom: 2.4em;
+  padding: 0.6em 1.2em;
+  border-radius: 10px;
+  background-color: #252525;
+  color: #ffffff;
+}
+
+.auxButton:hover {
+  background-color: #8b0000;
+  color: #ffffff;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0.2rem 0;
+}
+
+.dividerLine {
+  height: 1px;
+  flex: 1;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.dividerText {
+  color: #7d7d7d;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.oauthButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0.75em 1em;
+  border-radius: 14px;
+  background-color: #252525;
+  color: #ffffff;
+}
+
+.oauthButton:hover {
+  background-color: #000000;
+}
+
+.footnote {
+  margin: 0.1rem 0 1.6rem;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.inlineLink {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.inlineLink:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 24px 12px;
+  }
+
+  .formCard {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .buttonRow {
+    flex-direction: column;
+  }
+}
