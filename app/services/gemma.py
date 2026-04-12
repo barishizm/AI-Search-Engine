@@ -144,8 +144,15 @@ Answer:"""
                 sources = [s for s in sources if s in valid]
                 logger.info("select_sources for '%s': %s", query, sources)
                 return sources if sources else ["web"]
+        except httpx.HTTPStatusError as exc:
+            logger.error(
+                "Source selection failed: status=%s body=%s — defaulting to web",
+                exc.response.status_code,
+                exc.response.text[:500],
+            )
+            return ["web"]
         except Exception as exc:
-            logger.error("Source selection failed: %s — defaulting to web", exc)
+            logger.error("Source selection failed: %r — defaulting to web", exc)
             return ["web"]
 
     async def summarize(
@@ -219,10 +226,14 @@ Answer:"""
                 answer_parts = [p["text"] for p in parts if not p.get("thought")]
                 return answer_parts[-1] if answer_parts else parts[-1]["text"]
         except httpx.HTTPStatusError as exc:
-            logger.error(f"Gemma API error: status={exc.response.status_code}")
+            logger.error(
+                "Gemma API error: status=%s body=%s",
+                exc.response.status_code,
+                exc.response.text[:500],
+            )
             return None
         except (httpx.RequestError, KeyError, IndexError) as exc:
-            logger.error("Gemma API request failed: %s", exc)
+            logger.error("Gemma API request failed: %r", exc)
             return None
 
 

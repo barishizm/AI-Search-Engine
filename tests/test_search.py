@@ -84,7 +84,7 @@ async def test_search_returns_200_when_gemma_fails(mock_ingest, client: AsyncCli
         assert response.status_code == 200
         data = response.json()
         assert "results" in data
-        assert data["ai_summary"] is None
+        assert data["ai_summary"] == "I couldn't generate a response right now. Please try again."
         mock_svc.summarize.assert_called_once()
     finally:
         app.dependency_overrides.pop(get_gemma_service, None)

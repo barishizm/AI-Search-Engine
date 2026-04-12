@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
+FALLBACK_AI_MESSAGE = "I couldn't generate a response right now. Please try again."
 
 
 @router.post("/search/", response_model=SearchResponse)
@@ -37,6 +38,9 @@ async def search(
         ai_summary = await gemma_service.summarize(
             body.query, [], thinking=body.thinking, search_performed=False,
         )
+        if not ai_summary:
+            logger.warning("AI summary missing for conversational query=%r", body.query)
+            ai_summary = FALLBACK_AI_MESSAGE
         return SearchResponse(
             query=body.query,
             results=[],

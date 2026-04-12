@@ -143,6 +143,10 @@ export default function AIAnswer({ summary, results, status, searched }: AIAnswe
           <p className="text-sm text-gray-400">No results found. Try a different query.</p>
         )}
 
+        {status === "done" && !fullText && results.length === 0 && !searched && (
+          <p className="text-sm text-gray-400">I couldn't generate a response right now. Please try again.</p>
+        )}
+
         {/* Collapsible result cards */}
         {status === "done" && results.length > 0 && (
           <div className="mt-3">
