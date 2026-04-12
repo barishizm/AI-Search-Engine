@@ -1,6 +1,6 @@
 FROM python:3.10-slim
 
-WORKDIR /app
+WORKDIR /code
 
 # Install only essential system dependencies
 RUN apt-get update && apt-get install -y \
