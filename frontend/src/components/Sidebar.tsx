@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { MoreHorizontal, PanelLeftClose, PanelLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import { Conversation } from "@/types";
 import { deleteConversation, getConversations, renameConversation } from "@/lib/api";
@@ -27,12 +28,14 @@ export default function Sidebar({
   onOpenChange,
 }: SidebarProps) {
   const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const skipBlurSubmitRef = useRef(false);
   const toggleOpen = (value: boolean) => {
     onOpenChange(value);
   };
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
 
@@ -42,8 +45,13 @@ export default function Sidebar({
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
-      if (!sidebarRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const clickedInsideSidebar = sidebarRef.current?.contains(target);
+      const clickedInsideMenu = menuRef.current?.contains(target);
+
+      if (!clickedInsideSidebar && !clickedInsideMenu) {
         setMenuOpenId(null);
+        setMenuPosition(null);
       }
     };
 
@@ -51,11 +59,26 @@ export default function Sidebar({
     return () => document.removeEventListener("mousedown", handlePointerDown);
   }, []);
 
+  useEffect(() => {
+    const closeMenu = () => {
+      setMenuOpenId(null);
+      setMenuPosition(null);
+    };
+
+    window.addEventListener("resize", closeMenu);
+    window.addEventListener("scroll", closeMenu, true);
+    return () => {
+      window.removeEventListener("resize", closeMenu);
+      window.removeEventListener("scroll", closeMenu, true);
+    };
+  }, []);
+
   const startRename = (conversation: Conversation) => {
     skipBlurSubmitRef.current = false;
     setEditingId(conversation.id);
     setEditingTitle(conversation.title);
     setMenuOpenId(null);
+    setMenuPosition(null);
   };
 
   const cancelRename = () => {
@@ -113,6 +136,7 @@ export default function Sidebar({
       setMenuOpenId((current) =>
         current === conversation.id ? null : current,
       );
+      setMenuPosition(null);
       if (editingId === conversation.id) {
         cancelRename();
       }
@@ -177,6 +201,7 @@ export default function Sidebar({
                   <button
                     onClick={() => {
                       setMenuOpenId(null);
+                      setMenuPosition(null);
                       onSelectConversation(conv.id);
                     }}
                     className="min-w-0 flex-1 text-left"
@@ -235,42 +260,26 @@ export default function Sidebar({
                         type="button"
                         onClick={(event) => {
                           event.stopPropagation();
-                          setMenuOpenId((current) =>
-                            current === conv.id ? null : conv.id,
-                          );
+                          const rect = event.currentTarget.getBoundingClientRect();
+
+                          setMenuOpenId((current) => {
+                            const nextOpenId = current === conv.id ? null : conv.id;
+                            setMenuPosition(
+                              nextOpenId
+                                ? {
+                                    top: rect.bottom + 8,
+                                    left: rect.right - 150,
+                                  }
+                                : null,
+                            );
+                            return nextOpenId;
+                          });
                         }}
                         className="rounded-md p-1.5 text-gray-500 transition-colors hover:bg-white/10 hover:text-white"
                         aria-label={`Open options for ${conv.title}`}
                       >
                         <MoreHorizontal size={15} />
                       </button>
-
-                      {menuOpenId === conv.id && (
-                        <div className="absolute right-0 top-9 z-50 min-w-[150px] overflow-hidden rounded-xl border border-white/10 bg-[#2a2a2a] p-1 shadow-2xl">
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              startRename(conv);
-                            }}
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-white/10"
-                          >
-                            <Pencil size={14} />
-                            Rename
-                          </button>
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              void handleDelete(conv);
-                            }}
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-400 transition-colors hover:bg-red-500/10"
-                          >
-                            <Trash2 size={14} />
-                            Delete
-                          </button>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -279,6 +288,47 @@ export default function Sidebar({
           )}
         </div>
       </aside>
+      {menuOpenId && menuPosition && typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={menuRef}
+            className="fixed z-[70] min-w-[150px] overflow-hidden rounded-xl border border-white/10 bg-[#2a2a2a] p-1 shadow-2xl"
+            style={{
+              top: menuPosition.top,
+              left: Math.max(12, menuPosition.left),
+            }}
+          >
+            {conversations
+              .filter((conversation) => conversation.id === menuOpenId)
+              .map((conversation) => (
+                <div key={conversation.id}>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      startRename(conversation);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-white/10"
+                  >
+                    <Pencil size={14} />
+                    Rename
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void handleDelete(conversation);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-400 transition-colors hover:bg-red-500/10"
+                  >
+                    <Trash2 size={14} />
+                    Delete
+                  </button>
+                </div>
+              ))}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

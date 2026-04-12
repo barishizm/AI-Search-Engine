@@ -185,6 +185,9 @@ export default function SearchInput({ onSubmit, disabled, isLoggedIn = false, si
             <ArrowUp size={20} />
           </button>
         </div>
+        <p className="mt-2 text-center text-[11px] text-gray-500">
+          Engine can make mistakes. Check important info.
+        </p>
       </div>
     </div>
   );
