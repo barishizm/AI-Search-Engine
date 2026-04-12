@@ -45,6 +45,7 @@ export default function Home() {
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const isSearching = messages.some((m) => m.status === "loading");
+  const collapsedSidebarBadgeLeft = 56;
 
   // Listen for auth state
   useEffect(() => {
@@ -328,7 +329,7 @@ export default function Home() {
                   style={{
                     position: "fixed",
                     top: 12,
-                    left: sidebarOpen ? 272 : 12,
+                    left: sidebarOpen ? 272 : collapsedSidebarBadgeLeft,
                     transition: "left 0.2s ease",
                     zIndex: 10,
                   }}
