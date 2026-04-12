@@ -322,7 +322,7 @@ export default function Home() {
   // Authenticated chat interface
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#212121]">
-      <div className="ambient-stars pointer-events-none absolute inset-0 z-0" />
+      <div className="ambient-stars pointer-events-none fixed inset-0 z-0" />
 
       {/* Sidebar – only for logged-in users */}
       <Sidebar
