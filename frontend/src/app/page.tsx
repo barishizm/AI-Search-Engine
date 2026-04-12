@@ -49,7 +49,6 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [health, setHealth] = useState<HealthState | null>(null);
-  const [hasDraftQuery, setHasDraftQuery] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -340,10 +339,6 @@ export default function Home() {
   // Authenticated chat interface
   return (
     <div className="relative h-screen overflow-hidden bg-[#212121]">
-      {!hasDraftQuery && (
-        <div className="ambient-stars pointer-events-none fixed inset-0 z-0" />
-      )}
-
       {/* Sidebar – only for logged-in users */}
       <Sidebar
         userId={user.id}
@@ -440,7 +435,6 @@ export default function Home() {
           disabled={isSearching}
           isLoggedIn={isLoggedIn}
           sidebarWidth={sidebarWidth}
-          onQueryPresenceChange={setHasDraftQuery}
         />
       </div>
     </div>
