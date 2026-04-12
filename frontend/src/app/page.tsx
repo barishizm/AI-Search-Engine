@@ -10,7 +10,6 @@ import { SearchResult } from "@/types";
 import SearchInput from "@/components/SearchInput";
 import MessageBubble from "@/components/MessageBubble";
 import AIAnswer from "@/components/AIAnswer";
-import AuthButton from "@/components/auth/AuthButton";
 import Sidebar from "@/components/Sidebar";
 import Logo from "@/components/Logo";
 
@@ -374,10 +373,7 @@ export default function Home() {
             >
               <Logo size={32} />
             </button>
-            {/* Right – auth buttons */}
-            <div className="flex justify-end">
-              <AuthButton />
-            </div>
+            <div />
           </div>
         </header>
 

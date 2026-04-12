@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { MoreHorizontal, PanelLeftClose, PanelLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import { Conversation } from "@/types";
 import { deleteConversation, getConversations, renameConversation } from "@/lib/api";
+import AuthButton from "@/components/auth/AuthButton";
 
 interface SidebarProps {
   userId: string;
@@ -182,7 +183,7 @@ export default function Sidebar({
         </div>
 
         {/* Conversation list */}
-        <div className="flex-1 overflow-y-auto py-2">
+        <div className="min-h-0 flex-1 overflow-y-auto py-2">
           {conversations.length === 0 ? (
             <p className="px-3 py-4 text-xs text-gray-600 text-center">
               No conversations yet
@@ -286,6 +287,10 @@ export default function Sidebar({
               </div>
             ))
           )}
+        </div>
+
+        <div className="shrink-0 border-t border-white/5 p-3">
+          <AuthButton variant="sidebar" />
         </div>
       </aside>
       {menuOpenId && menuPosition && typeof document !== "undefined" &&
