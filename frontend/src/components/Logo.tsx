@@ -3,8 +3,6 @@ import styles from "./Logo.module.css";
 const Logo = ({ size = 80 }: { size?: number }) => {
   const fontSize = Math.max(12, size * 0.34);
   const badgeFontSize = Math.max(7, size * 0.13);
-  const badgePaddingX = Math.max(5, size * 0.09);
-  const badgePaddingY = Math.max(2, size * 0.03);
 
   return (
     <div className={styles.logo} style={{ padding: `${Math.max(4, size * 0.08)}px 0` }}>
@@ -16,18 +14,22 @@ const Logo = ({ size = 80 }: { size?: number }) => {
         }}
       >
         <span className={styles.unPrefix}>Un</span>
-        <span className={styles.wordmarkBase}>Limited Search</span>
-      </span>
-      <span
-        className={styles.badge}
-        style={{
-          top: Math.max(-4, size * -0.05),
-          right: Math.max(-18, size * -0.24),
-          padding: `${badgePaddingY}px ${badgePaddingX}px`,
-          fontSize: badgeFontSize,
-        }}
-      >
-        BETA
+        <span className={styles.wordmarkBase}>
+          Limited Searc
+          <span className={styles.wordmarkEnd}>
+            h
+            <span
+              className={styles.badge}
+              style={{
+                fontSize: badgeFontSize,
+                top: `${Math.max(-8, size * -0.2)}px`,
+                right: `${Math.max(-28, size * -0.42)}px`,
+              }}
+            >
+              BETA
+            </span>
+          </span>
+        </span>
       </span>
     </div>
   );
