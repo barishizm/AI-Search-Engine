@@ -36,7 +36,6 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -72,8 +71,7 @@ export default function RegisterPage() {
       return;
     }
 
-    setSuccess(true);
-    setLoading(false);
+    window.location.href = "/";
   };
 
   const handleGoogleLogin = async () => {
@@ -83,7 +81,7 @@ export default function RegisterPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin + "/auth/callback",
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
@@ -92,35 +90,6 @@ export default function RegisterPage() {
       setGoogleLoading(false);
     }
   };
-
-  if (success) {
-    return (
-      <AuthShell
-        title="Check your email"
-        subtitle="Confirm your address to finish creating your account."
-      >
-        <div className={`${styles.message} ${styles.successMessage}`}>
-          We sent a confirmation link to <strong>{email}</strong>. Open it to
-          activate your account.
-        </div>
-
-        <div className={styles.buttonRow}>
-          <Link
-            className={`${styles.actionButton} ${styles.primaryButton}`}
-            href="/auth/login"
-          >
-            Back to Login
-          </Link>
-          <Link
-            className={`${styles.actionButton} ${styles.secondaryButton}`}
-            href="/"
-          >
-            Home
-          </Link>
-        </div>
-      </AuthShell>
-    );
-  }
 
   return (
     <AuthShell
