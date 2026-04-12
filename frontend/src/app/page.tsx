@@ -321,7 +321,9 @@ export default function Home() {
 
   // Authenticated chat interface
   return (
-    <div className="min-h-screen bg-[#212121]">
+    <div className="relative min-h-screen overflow-hidden bg-[#212121]">
+      <div className="ambient-stars pointer-events-none absolute inset-0 z-0" />
+
       {/* Sidebar – only for logged-in users */}
       <Sidebar
         userId={user.id}
@@ -336,7 +338,7 @@ export default function Home() {
 
       {/* Main area */}
       <div
-        className="flex flex-col min-h-screen transition-[padding-left] duration-300"
+        className="relative z-10 flex flex-col min-h-screen transition-[padding-left] duration-300"
         style={{ paddingLeft: sidebarWidth }}
       >
         {/* Header */}

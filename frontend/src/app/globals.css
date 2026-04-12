@@ -32,3 +32,55 @@ body {
 .animate-blink {
   animation: blink 0.7s step-end infinite;
 }
+
+@keyframes ambient-stars-twinkle {
+  0%, 100% {
+    opacity: 0.16;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.28;
+    transform: scale(1.02);
+  }
+}
+
+.ambient-stars,
+.ambient-stars::before,
+.ambient-stars::after {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  pointer-events: none;
+}
+
+.ambient-stars {
+  opacity: 0.6;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.18) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.12) 0 0.8px, transparent 1.4px);
+  background-position: 0 0, 36px 52px;
+  background-size: 180px 180px, 240px 240px;
+  animation: ambient-stars-twinkle 9s ease-in-out infinite;
+}
+
+.ambient-stars::before,
+.ambient-stars::after {
+  content: "";
+  animation: ambient-stars-twinkle 12s ease-in-out infinite;
+}
+
+.ambient-stars::before {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.14) 0 0.9px, transparent 1.5px);
+  background-position: 72px 18px;
+  background-size: 210px 210px;
+  animation-delay: -4s;
+}
+
+.ambient-stars::after {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.1) 0 0.7px, transparent 1.3px);
+  background-position: 24px 96px;
+  background-size: 270px 270px;
+  animation-delay: -8s;
+}
