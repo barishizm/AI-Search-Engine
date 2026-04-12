@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
+import AuthCodeHandler from "@/components/auth/AuthCodeHandler";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -79,6 +81,9 @@ export default function RootLayout({
       <body
         className={`${inter.className} bg-[#212121] text-white antialiased`}
       >
+        <Suspense fallback={null}>
+          <AuthCodeHandler />
+        </Suspense>
         {children}
       </body>
     </html>
