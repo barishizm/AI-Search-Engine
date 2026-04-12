@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import AuthCodeHandler from "@/components/auth/AuthCodeHandler";
+import SessionTimeoutManager from "@/components/auth/SessionTimeoutManager";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -84,6 +85,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <AuthCodeHandler />
         </Suspense>
+        <SessionTimeoutManager />
         {children}
       </body>
     </html>
