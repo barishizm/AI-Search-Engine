@@ -36,6 +36,13 @@ interface HealthState {
 }
 
 const SIDEBAR_OPEN_STORAGE_KEY = "limited-search:sidebar-open";
+const MODEL_NAME_ALIASES: Record<string, string> = {
+  "gemini-3.1-flash-lite-preview": "gemini-3-flash-preview",
+};
+
+function normalizeModelName(model: string) {
+  return MODEL_NAME_ALIASES[model] ?? model;
+}
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -46,6 +53,7 @@ export default function Home() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLElement>(null);
   const isSearching = messages.some((m) => m.status === "loading");
   const collapsedSidebarBadgeLeft = 56;
 
@@ -85,7 +93,16 @@ export default function Home() {
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      const container = scrollContainerRef.current;
+      if (!container) {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
     }, 100);
   }, []);
 
@@ -196,7 +213,7 @@ export default function Home() {
   const handleNewSearch = useCallback(() => {
     setMessages([]);
     setActiveConversationId(null);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const handleDeleteConversation = useCallback((conversationId: string) => {
@@ -322,7 +339,7 @@ export default function Home() {
 
   // Authenticated chat interface
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#212121]">
+    <div className="relative h-screen overflow-hidden bg-[#212121]">
       {!hasDraftQuery && (
         <div className="ambient-stars pointer-events-none fixed inset-0 z-0" />
       )}
@@ -341,7 +358,7 @@ export default function Home() {
 
       {/* Main area */}
       <div
-        className="relative z-10 flex flex-col min-h-screen transition-[padding-left] duration-300"
+        className="relative z-10 flex h-screen min-h-0 flex-col transition-[padding-left] duration-300"
         style={{ paddingLeft: sidebarWidth }}
       >
         {/* Header */}
@@ -367,7 +384,7 @@ export default function Home() {
                     {health.ai_configured ? "AI Ready" : "AI Fallback"}
                   </span>
                   <span className="text-gray-500">/</span>
-                  <span className="truncate text-gray-400">{health.ai_model}</span>
+                  <span className="truncate text-gray-400">{normalizeModelName(health.ai_model)}</span>
                 </div>
               )}
             </div>
@@ -383,7 +400,10 @@ export default function Home() {
         </header>
 
         {/* Conversation area */}
-        <main className="flex-1 pt-14 pb-32">
+        <main
+          ref={scrollContainerRef}
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-14 pb-32"
+        >
           <div className="max-w-3xl mx-auto px-4">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">

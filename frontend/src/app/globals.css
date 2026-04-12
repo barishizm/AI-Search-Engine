@@ -47,7 +47,7 @@ body {
 .ambient-stars,
 .ambient-stars::before,
 .ambient-stars::after {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background-repeat: repeat;
   pointer-events: none;

@@ -5,6 +5,15 @@ from typing import Union
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+MODEL_ALIASES = {
+    "gemini-3.1-flash-lite-preview": "gemini-3-flash-preview",
+}
+
+
+def canonicalize_ai_model(value: str) -> str:
+    normalized = value.strip()
+    return MODEL_ALIASES.get(normalized, normalized)
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -56,12 +65,12 @@ class Settings(BaseSettings):
     @classmethod
     def parse_ai_model(cls, v):
         if isinstance(v, str) and v.strip():
-            return v.strip()
+            return canonicalize_ai_model(v)
 
         for env_name in ("AI_MODEL", "GEMINI_MODEL", "GOOGLE_AI_MODEL"):
             candidate = os.getenv(env_name, "").strip()
             if candidate:
-                return candidate
+                return canonicalize_ai_model(candidate)
 
         return "gemini-3-flash-preview"
 

@@ -42,3 +42,11 @@ def test_settings_accepts_google_ai_key_aliases(monkeypatch, env_name: str):
 
     assert settings.google_ai_api_key == "test-key"
     assert settings.ai_configured is True
+
+
+def test_settings_normalizes_legacy_ai_model_name(monkeypatch):
+    monkeypatch.setenv("AI_MODEL", "gemini-3.1-flash-lite-preview")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.ai_model == "gemini-3-flash-preview"
