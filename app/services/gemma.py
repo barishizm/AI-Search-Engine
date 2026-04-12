@@ -19,6 +19,30 @@ SYSTEM_PROMPT = (
     "facts, dates, and numbers when available. End with sources used."
 )
 
+LOCAL_CHAT_RESPONSES = {
+    "merhaba": "Merhaba! Sana nasil yardimci olabilirim?",
+    "merhabalar": "Merhaba! Sana nasil yardimci olabilirim?",
+    "selam": "Selam! Sana nasil yardimci olabilirim?",
+    "gunaydin": "Gunaydin! Sana nasil yardimci olabilirim?",
+    "iyi gunler": "Iyi gunler! Sana nasil yardimci olabilirim?",
+    "iyi aksamlar": "Iyi aksamlar! Sana nasil yardimci olabilirim?",
+    "nasilsin": "Iyiyim, tesekkurler! Sana nasil yardimci olabilirim?",
+    "tesekkurler": "Rica ederim! Baska bir sey olursa buradayim.",
+    "sag ol": "Rica ederim! Baska bir sey olursa buradayim.",
+    "hosca kal": "Gorusuruz! Yardim gerekirse yine yaz.",
+    "hello": "Hello! How can I help you?",
+    "hi": "Hi! How can I help you?",
+    "hey": "Hey! How can I help you?",
+    "thanks": "You're welcome! Let me know if you'd like help with anything else.",
+    "thank you": "You're welcome! Let me know if you'd like help with anything else.",
+    "bye": "See you later! I'm here if you need anything else.",
+}
+
+TURKISH_HINTS = {
+    "merhaba", "selam", "nasilsin", "tesekkurler", "sag ol",
+    "gunaydin", "iyi", "hosca", "nasil", "yardim",
+}
+
 
 def format_results(results: list[dict]) -> str:
     lines: list[str] = []
@@ -31,10 +55,43 @@ def format_results(results: list[dict]) -> str:
     return "\n\n".join(lines)
 
 
+def normalize_text(text: str) -> str:
+    translation = str.maketrans(
+        {
+            "ç": "c",
+            "ğ": "g",
+            "ı": "i",
+            "ö": "o",
+            "ş": "s",
+            "ü": "u",
+            "Ç": "c",
+            "Ğ": "g",
+            "İ": "i",
+            "I": "i",
+            "Ö": "o",
+            "Ş": "s",
+            "Ü": "u",
+        }
+    )
+    normalized = text.strip().lower().translate(translation)
+    return " ".join(normalized.rstrip("!?.").split())
+
+
 class GemmaService:
     def __init__(self, api_key: str, model: str) -> None:
         self.api_key = api_key
         self.model = model
+
+    def fallback_chat_response(self, query: str) -> str:
+        normalized = normalize_text(query)
+        direct = LOCAL_CHAT_RESPONSES.get(normalized)
+        if direct:
+            return direct
+
+        if any(token in normalized.split() for token in TURKISH_HINTS):
+            return "Su anda AI servisine ulasamiyorum. Istersen aramayi acip tekrar deneyebilirsin."
+
+        return "I can't reach the AI service right now. You can try again or turn on search for web results."
 
     async def needs_search(self, query: str) -> bool:
         if not self.api_key:
@@ -42,11 +99,11 @@ class GemmaService:
 
         # Fast local check: common greetings and casual chat never need search
         _no_search = {
-            "merhaba", "selam", "nasılsın", "teşekkürler", "iyi günler",
-            "hello", "hi", "hey", "thanks", "thank you", "bye", "günaydın",
-            "iyi akşamlar", "hoşça kal", "sağ ol", "merhabalar",
+            "merhaba", "selam", "nasilsin", "tesekkurler", "iyi gunler",
+            "hello", "hi", "hey", "thanks", "thank you", "bye", "gunaydin",
+            "iyi aksamlar", "hosca kal", "sag ol", "merhabalar",
         }
-        if query.strip().lower().rstrip("!?.") in _no_search:
+        if normalize_text(query) in _no_search:
             logger.info("needs_search for '%s': NO (local shortcut)", query)
             return False
 

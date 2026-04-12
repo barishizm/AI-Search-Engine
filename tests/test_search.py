@@ -68,7 +68,7 @@ async def test_search_empty_query_returns_422(client: AsyncClient):
 
 @pytest.mark.anyio
 @patch("app.routes.search.ingest_source", new_callable=AsyncMock)
-async def test_search_returns_200_when_gemma_fails(mock_ingest, client: AsyncClient):
+async def test_search_returns_local_chat_fallback_when_gemma_fails(mock_ingest, client: AsyncClient):
     mock_ingest.return_value = {"source": "brave_search", "indexed": 0, "failed": 0}
     from app.services.gemma import GemmaService, get_gemma_service
 
@@ -79,12 +79,12 @@ async def test_search_returns_200_when_gemma_fails(mock_ingest, client: AsyncCli
     try:
         response = await client.post(
             "/search/",
-            json={"query": "space exploration", "top_k": 3},
+            json={"query": "merhaba", "top_k": 3},
         )
         assert response.status_code == 200
         data = response.json()
         assert "results" in data
-        assert data["ai_summary"] == "I couldn't generate a response right now. Please try again."
+        assert data["ai_summary"] == "Merhaba! Sana nasil yardimci olabilirim?"
         mock_svc.summarize.assert_called_once()
     finally:
         app.dependency_overrides.pop(get_gemma_service, None)
