@@ -323,11 +323,17 @@ export default function Home() {
             {/* Left – health badge */}
             <div className="flex justify-start">
               {health && (
-                <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-gray-300">
-                  <span className={`h-2 w-2 rounded-full ${health.ai_configured ? "bg-emerald-400" : "bg-amber-400"}`} />
-                  <span className="uppercase tracking-[0.16em]">{health.ai_configured ? "AI Ready" : "AI Fallback"}</span>
-                  <span className="text-gray-500">/</span>
-                  <span className="truncate text-gray-400">{health.ai_model}</span>
+                <div className="inline-flex max-w-full items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-gray-300">
+                  <span className={`h-2 w-2 shrink-0 rounded-full ${health.ai_configured ? "bg-emerald-400" : "bg-amber-400"}`} />
+                  <span className="uppercase tracking-[0.16em]">
+                    {sidebarOpen ? "AI" : health.ai_configured ? "AI Ready" : "AI Fallback"}
+                  </span>
+                  {!sidebarOpen && (
+                    <>
+                      <span className="text-gray-500">/</span>
+                      <span className="truncate text-gray-400">{health.ai_model}</span>
+                    </>
+                  )}
                 </div>
               )}
             </div>
