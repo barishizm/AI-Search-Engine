@@ -323,7 +323,16 @@ export default function Home() {
             {/* Left – health badge */}
             <div className="flex justify-start">
               {health && (
-                <div className="inline-flex max-w-full items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-gray-300">
+                <div
+                  className="inline-flex max-w-full items-center gap-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-gray-300"
+                  style={{
+                    position: "fixed",
+                    top: 12,
+                    left: sidebarOpen ? 272 : 12,
+                    transition: "left 0.2s ease",
+                    zIndex: 10,
+                  }}
+                >
                   <span className={`h-2 w-2 shrink-0 rounded-full ${health.ai_configured ? "bg-emerald-400" : "bg-amber-400"}`} />
                   <span className="uppercase tracking-[0.16em]">
                     {sidebarOpen ? "AI" : health.ai_configured ? "AI Ready" : "AI Fallback"}
