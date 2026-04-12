@@ -199,6 +199,13 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  const handleDeleteConversation = useCallback((conversationId: string) => {
+    if (conversationId === activeConversationId) {
+      setMessages([]);
+      setActiveConversationId(null);
+    }
+  }, [activeConversationId]);
+
   const handleSelectConversation = useCallback(async (conversationId: string) => {
     setActiveConversationId(conversationId);
     try {
@@ -322,6 +329,7 @@ export default function Home() {
         activeConversationId={activeConversationId}
         onSelectConversation={handleSelectConversation}
         onNewSearch={handleNewSearch}
+        onDeleteConversation={handleDeleteConversation}
         refreshKey={sidebarRefreshKey}
         open={sidebarOpen}
         onOpenChange={setSidebarOpen}

@@ -116,6 +116,32 @@ export async function getConversations(
   return data as Conversation[];
 }
 
+export async function renameConversation(
+  conversationId: string,
+  title: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("conversations")
+    .update({
+      title,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", conversationId);
+
+  if (error) throw error;
+}
+
+export async function deleteConversation(
+  conversationId: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from("conversations")
+    .delete()
+    .eq("id", conversationId);
+
+  if (error) throw error;
+}
+
 export async function getMessages(
   conversationId: string,
 ): Promise<ConversationMessage[]> {

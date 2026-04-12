@@ -267,6 +267,11 @@ on public.conversations
 for update
 using (auth.uid() = user_id);
 
+create policy "conversations_delete_own"
+on public.conversations
+for delete
+using (auth.uid() = user_id);
+
 create policy "messages_select_own"
 on public.messages
 for select
