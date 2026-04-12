@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Union
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -15,7 +16,7 @@ class Settings(BaseSettings):
     debug: bool = False
     chroma_persist_dir: str = "./chroma_data"
     chroma_collection_name: str = "documents"
-    allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+    allowed_origins: Union[str, list] = "http://localhost:3000,http://localhost:3001"
     brave_search_api_key: str = ""
     tmdb_api_key: str = ""
     spotify_client_id: str = ""
@@ -34,10 +35,14 @@ class Settings(BaseSettings):
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
-    def parse_origins(cls, v: object) -> object:
-        if isinstance(v, str):
-            return [o.strip() for o in v.split(",") if o.strip()]
+    def parse_origins(cls, v):
+        if isinstance(v, list):
+            return ",".join(v)
+        v = str(v).strip().strip("[]").replace('"', '').replace("'", "")
         return v
+
+    def get_origins_list(self) -> list:
+        return [o.strip() for o in self.allowed_origins.split(",") if o.strip()]
 
 
 @lru_cache
