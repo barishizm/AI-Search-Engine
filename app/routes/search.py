@@ -38,8 +38,14 @@ async def search(
         ai_summary = await gemini_service.summarize(
             body.query, [], thinking=body.thinking, search_performed=False, history=history,
         )
+        if ai_summary is None:
+            logger.warning("AI summary missing for conversational query=%r, retrying in 2s", body.query)
+            await asyncio.sleep(2)
+            ai_summary = await gemini_service.summarize(
+                body.query, [], thinking=body.thinking, search_performed=False, history=history,
+            )
         if not ai_summary:
-            logger.warning("AI summary missing for conversational query=%r", body.query)
+            logger.warning("AI summary still missing after retry for query=%r", body.query)
             ai_summary = gemini_service.fallback_chat_response(body.query)
         return SearchResponse(
             query=body.query,
@@ -107,6 +113,15 @@ async def search(
         ai_summary = await gemini_service.summarize(
             body.query, result_dicts, thinking=body.thinking, history=history,
         )
+        if ai_summary is None:
+            logger.warning("AI summary failed for query=%r, retrying in 2s", body.query)
+            await asyncio.sleep(2)
+            ai_summary = await gemini_service.summarize(
+                body.query, result_dicts, thinking=body.thinking, history=history,
+            )
+            if ai_summary is None:
+                logger.warning("AI summary still failing after retry for query=%r", body.query)
+                ai_summary = ""
 
     return SearchResponse(
         query=body.query,

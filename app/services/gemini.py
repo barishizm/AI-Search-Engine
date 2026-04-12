@@ -309,7 +309,7 @@ Answer:"""
         url = API_URL.format(model=self.model)
 
         try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
+            async with httpx.AsyncClient(timeout=90.0) as client:
                 resp = await client.post(
                     url,
                     params={"key": self.api_key},
@@ -321,6 +321,9 @@ Answer:"""
                 parts = data["candidates"][0]["content"]["parts"]
                 answer_parts = [p["text"] for p in parts if not p.get("thought")]
                 return answer_parts[-1] if answer_parts else parts[-1]["text"]
+        except httpx.TimeoutException as exc:
+            logger.warning("Gemini API timed out after 90s: %r", exc)
+            return None
         except httpx.HTTPStatusError as exc:
             logger.error(
                 "Gemini API error: status=%s body=%s",

@@ -119,13 +119,25 @@ export default function Home() {
 
       setMessages((prev) => [...prev, newMessage]);
 
-      try {
-        const history = messages
-          .filter((m) => m.status === "done" && m.summary)
-          .slice(-3)
-          .map((m) => ({ query: m.query, summary: m.summary || "" }));
+      const history = messages
+        .filter((m) => m.status === "done" && m.summary)
+        .slice(-3)
+        .map((m) => ({ query: m.query, summary: m.summary || "" }));
 
-        const response = await search(query, thinking, performSearch, history);
+      try {
+        let response;
+        try {
+          response = await search(query, thinking, performSearch, history);
+        } catch (firstError) {
+          console.warn("Search failed, retrying in 2s:", firstError);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === id ? { ...m, summary: "Retrying..." } : m,
+            ),
+          );
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          response = await search(query, thinking, performSearch, history);
+        }
 
         setMessages((prev) =>
           prev.map((m) =>
