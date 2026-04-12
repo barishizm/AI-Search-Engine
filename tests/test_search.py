@@ -90,7 +90,7 @@ async def test_search_returns_local_chat_fallback_when_gemini_fails(mock_ingest,
         data = response.json()
         assert "results" in data
         assert data["ai_summary"] == "Merhaba! Sana nasil yardimci olabilirim?"
-        mock_svc.summarize.assert_called_once()
+        assert mock_svc.summarize.await_count == 2
     finally:
         app.dependency_overrides.pop(get_gemini_service, None)
 
@@ -100,7 +100,7 @@ async def test_search_returns_local_model_identity_fallback_in_turkish(mock_inge
     mock_ingest.return_value = {"source": "brave_search", "indexed": 0, "failed": 0}
     from app.services.gemini import GeminiService, get_gemini_service
 
-    mock_svc = GeminiService(api_key="", model="gemini-3.1-flash-lite-preview")
+    mock_svc = GeminiService(api_key="", model="gemini-3-flash-preview")
     mock_svc.summarize = AsyncMock(return_value=None)
 
     app.dependency_overrides[get_gemini_service] = lambda: mock_svc
@@ -114,8 +114,8 @@ async def test_search_returns_local_model_identity_fallback_in_turkish(mock_inge
         assert "results" in data
         assert data["ai_summary"] == (
             "Su anda AI servisine ulasamiyorum ama bu uygulama normalde "
-            "gemini-3.1-flash-lite-preview modeliyle calisiyor."
+            "gemini-3-flash-preview modeliyle calisiyor."
         )
-        mock_svc.summarize.assert_called_once()
+        assert mock_svc.summarize.await_count == 2
     finally:
         app.dependency_overrides.pop(get_gemini_service, None)

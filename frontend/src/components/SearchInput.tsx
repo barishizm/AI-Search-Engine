@@ -9,9 +9,16 @@ interface SearchInputProps {
   disabled?: boolean;
   isLoggedIn?: boolean;
   sidebarWidth?: number;
+  onQueryPresenceChange?: (hasQuery: boolean) => void;
 }
 
-export default function SearchInput({ onSubmit, disabled, isLoggedIn = false, sidebarWidth = 0 }: SearchInputProps) {
+export default function SearchInput({
+  onSubmit,
+  disabled,
+  isLoggedIn = false,
+  sidebarWidth = 0,
+  onQueryPresenceChange,
+}: SearchInputProps) {
   const [query, setQuery] = useState("");
   const [thinking, setThinking] = useState(false);
   const [searchEnabled, setSearchEnabled] = useState(false);
@@ -31,6 +38,10 @@ export default function SearchInput({ onSubmit, disabled, isLoggedIn = false, si
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    onQueryPresenceChange?.(query.trim().length > 0);
+  }, [query, onQueryPresenceChange]);
+
   const handleSubmit = useCallback(() => {
     if (!isLoggedIn) {
       router.push("/auth/login");
@@ -40,10 +51,11 @@ export default function SearchInput({ onSubmit, disabled, isLoggedIn = false, si
     if (!trimmed || disabled) return;
     onSubmit(trimmed, thinking, searchEnabled);
     setQuery("");
+    onQueryPresenceChange?.(false);
     if (inputRef.current) {
       inputRef.current.style.height = "24px";
     }
-  }, [query, thinking, disabled, onSubmit, isLoggedIn, router, searchEnabled]);
+  }, [query, thinking, disabled, onSubmit, isLoggedIn, router, searchEnabled, onQueryPresenceChange]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {

@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     # AI model (Google AI Studio)
     google_ai_api_key: str = ""
-    ai_model: str = "gemini-3.1-flash-lite-preview"
+    ai_model: str = "gemini-3-flash-preview"
     summary_max_tokens: int = 500
     summary_enabled: bool = True
 
@@ -63,7 +63,7 @@ class Settings(BaseSettings):
             if candidate:
                 return candidate
 
-        return "gemini-3.1-flash-lite-preview"
+        return "gemini-3-flash-preview"
 
     @field_validator("debug", mode="before")
     @classmethod

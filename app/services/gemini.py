@@ -9,7 +9,7 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 
 API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-FAST_MODEL = "gemini-3.1-flash-lite-preview"
+FAST_MODEL = "gemini-3-flash-preview"
 
 SYSTEM_PROMPT = (
     "You are a helpful AI assistant. Answer the user's question directly and "
