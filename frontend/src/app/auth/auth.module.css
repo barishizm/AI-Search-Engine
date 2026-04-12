@@ -24,13 +24,6 @@
   text-decoration: none;
 }
 
-.brandText {
-  color: #ffffff;
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
 .formCard {
   display: flex;
   flex-direction: column;

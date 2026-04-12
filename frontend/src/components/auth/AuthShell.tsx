@@ -19,7 +19,6 @@ export default function AuthShell({
       <div className={styles.shell}>
         <Link href="/" className={styles.brandLink}>
           <Logo size={48} />
-          <span className={styles.brandText}>Limited-Search</span>
         </Link>
 
         <section className={styles.formCard}>
