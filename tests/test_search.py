@@ -6,9 +6,16 @@ from httpx import ASGITransport, AsyncClient
 from app.auth import get_current_user
 from app.main import app
 
+pytestmark = pytest.mark.anyio
+
 
 async def mock_current_user():
     return "test-user-id"
+
+
+@pytest.fixture(params=["asyncio"])
+def anyio_backend(request):
+    return request.param
 
 
 @pytest.fixture(autouse=True)
@@ -24,7 +31,6 @@ def client():
     return AsyncClient(transport=transport, base_url="http://test")
 
 
-@pytest.mark.anyio
 async def test_health_returns_200(client: AsyncClient):
     response = await client.get("/health")
     assert response.status_code == 200
@@ -34,7 +40,6 @@ async def test_health_returns_200(client: AsyncClient):
     assert "ai_model" in data
 
 
-@pytest.mark.anyio
 @patch("app.routes.search.ingest_source", new_callable=AsyncMock)
 async def test_search_valid_query(mock_ingest, client: AsyncClient):
     mock_ingest.return_value = {"source": "brave_search", "indexed": 0, "failed": 0}
@@ -44,13 +49,13 @@ async def test_search_valid_query(mock_ingest, client: AsyncClient):
     mock_svc.select_sources = AsyncMock(return_value=["web", "film", "music"])
     mock_svc.summarize = AsyncMock(return_value=None)
 
-    from app.services.gemma import get_gemma_service
+    from app.services.gemini import get_gemini_service
 
-    app.dependency_overrides[get_gemma_service] = lambda: mock_svc
+    app.dependency_overrides[get_gemini_service] = lambda: mock_svc
     try:
         response = await client.post(
             "/search/",
-            json={"query": "space exploration", "top_k": 3},
+            json={"query": "space exploration", "top_k": 3, "search": True},
         )
         assert response.status_code == 200
         data = response.json()
@@ -59,25 +64,23 @@ async def test_search_valid_query(mock_ingest, client: AsyncClient):
         assert data["query"] == "space exploration"
         assert mock_ingest.await_count == 3
     finally:
-        app.dependency_overrides.pop(get_gemma_service, None)
+        app.dependency_overrides.pop(get_gemini_service, None)
 
 
-@pytest.mark.anyio
 async def test_search_empty_query_returns_422(client: AsyncClient):
     response = await client.post("/search/", json={})
     assert response.status_code == 422
 
 
-@pytest.mark.anyio
 @patch("app.routes.search.ingest_source", new_callable=AsyncMock)
-async def test_search_returns_local_chat_fallback_when_gemma_fails(mock_ingest, client: AsyncClient):
+async def test_search_returns_local_chat_fallback_when_gemini_fails(mock_ingest, client: AsyncClient):
     mock_ingest.return_value = {"source": "brave_search", "indexed": 0, "failed": 0}
-    from app.services.gemma import GemmaService, get_gemma_service
+    from app.services.gemini import GeminiService, get_gemini_service
 
-    mock_svc = GemmaService(api_key="", model="fake")
+    mock_svc = GeminiService(api_key="", model="fake")
     mock_svc.summarize = AsyncMock(return_value=None)
 
-    app.dependency_overrides[get_gemma_service] = lambda: mock_svc
+    app.dependency_overrides[get_gemini_service] = lambda: mock_svc
     try:
         response = await client.post(
             "/search/",
@@ -89,4 +92,30 @@ async def test_search_returns_local_chat_fallback_when_gemma_fails(mock_ingest, 
         assert data["ai_summary"] == "Merhaba! Sana nasil yardimci olabilirim?"
         mock_svc.summarize.assert_called_once()
     finally:
-        app.dependency_overrides.pop(get_gemma_service, None)
+        app.dependency_overrides.pop(get_gemini_service, None)
+
+
+@patch("app.routes.search.ingest_source", new_callable=AsyncMock)
+async def test_search_returns_local_model_identity_fallback_in_turkish(mock_ingest, client: AsyncClient):
+    mock_ingest.return_value = {"source": "brave_search", "indexed": 0, "failed": 0}
+    from app.services.gemini import GeminiService, get_gemini_service
+
+    mock_svc = GeminiService(api_key="", model="gemini-3.1-flash-lite-preview")
+    mock_svc.summarize = AsyncMock(return_value=None)
+
+    app.dependency_overrides[get_gemini_service] = lambda: mock_svc
+    try:
+        response = await client.post(
+            "/search/",
+            json={"query": "hangi modelsin", "top_k": 3},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "results" in data
+        assert data["ai_summary"] == (
+            "Su anda AI servisine ulasamiyorum ama bu uygulama normalde "
+            "gemini-3.1-flash-lite-preview modeliyle calisiyor."
+        )
+        mock_svc.summarize.assert_called_once()
+    finally:
+        app.dependency_overrides.pop(get_gemini_service, None)

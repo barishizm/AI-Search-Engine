@@ -7,7 +7,7 @@ The project has two main parts:
 - A FastAPI backend that fetches data from web, film, and music sources, embeds it with SentenceTransformers, stores it in ChromaDB, and returns ranked search results.
 - A Next.js frontend that handles authentication with Supabase, lets users search through a conversational interface, and stores conversation history.
 
-Despite the filename [`app/services/gemma.py`](app/services/gemma.py), the current AI integration is wired to Google's Generative Language API with Gemini models such as `gemini-3.1-flash-lite-preview`.
+The current AI integration is wired to Google's Generative Language API with Gemini models such as `gemini-3.1-flash-lite-preview`.
 
 ## Features
 
@@ -89,7 +89,7 @@ ChromaDB persistent vector store
 │   │   └── ingest.py            # Manual ingestion endpoint
 │   ├── services/
 │   │   ├── embedder.py          # SentenceTransformer wrapper
-│   │   ├── gemma.py             # Gemini/Google AI integration
+│   │   ├── gemini.py            # Gemini/Google AI integration
 │   │   ├── ingestion.py         # Source ingestion orchestration
 │   │   ├── vector_store.py      # ChromaDB wrapper
 │   │   └── sources/

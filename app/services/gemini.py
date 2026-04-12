@@ -9,8 +9,6 @@ from app.config import get_settings
 logger = logging.getLogger(__name__)
 
 API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-
-# Default fast model for intent classification calls
 FAST_MODEL = "gemini-3.1-flash-lite-preview"
 
 SYSTEM_PROMPT = (
@@ -22,25 +20,26 @@ SYSTEM_PROMPT = (
 LOCAL_CHAT_RESPONSES = {
     "merhaba": "Merhaba! Sana nasil yardimci olabilirim?",
     "merhabalar": "Merhaba! Sana nasil yardimci olabilirim?",
-    "selam": "Selam! Sana nasil yardimci olabilirim?",
+    "selam": "Selam! Buradayim, nasil yardimci olabilirim?",
     "gunaydin": "Gunaydin! Sana nasil yardimci olabilirim?",
     "iyi gunler": "Iyi gunler! Sana nasil yardimci olabilirim?",
     "iyi aksamlar": "Iyi aksamlar! Sana nasil yardimci olabilirim?",
-    "nasilsin": "Iyiyim, tesekkurler! Sana nasil yardimci olabilirim?",
-    "tesekkurler": "Rica ederim! Baska bir sey olursa buradayim.",
-    "sag ol": "Rica ederim! Baska bir sey olursa buradayim.",
-    "hosca kal": "Gorusuruz! Yardim gerekirse yine yaz.",
+    "nasilsin": "Iyiyim, tesekkur ederim. Sana nasil yardimci olabilirim?",
+    "tesekkurler": "Rica ederim. Istersen devam edebiliriz.",
+    "sag ol": "Rica ederim. Baska bir sey olursa yazabilirsin.",
+    "hosca kal": "Gorusuruz! Ihtiyacin olursa yine buradayim.",
     "hello": "Hello! How can I help you?",
     "hi": "Hi! How can I help you?",
     "hey": "Hey! How can I help you?",
-    "thanks": "You're welcome! Let me know if you'd like help with anything else.",
-    "thank you": "You're welcome! Let me know if you'd like help with anything else.",
-    "bye": "See you later! I'm here if you need anything else.",
+    "thanks": "You're welcome. I'm happy to help.",
+    "thank you": "You're welcome. I'm happy to help.",
+    "bye": "See you later. I'm here if you need anything else.",
 }
 
 TURKISH_HINTS = {
-    "merhaba", "selam", "nasilsin", "tesekkurler", "sag ol",
-    "gunaydin", "iyi", "hosca", "nasil", "yardim",
+    "merhaba", "selam", "nasilsin", "tesekkurler", "sag", "ol",
+    "gunaydin", "iyi", "hosca", "nasil", "yardim", "hangi",
+    "model", "modelsin", "kimsin", "sen", "misin",
 }
 
 
@@ -77,7 +76,25 @@ def normalize_text(text: str) -> str:
     return " ".join(normalized.rstrip("!?.").split())
 
 
-class GemmaService:
+def is_turkish_like(text: str) -> bool:
+    normalized = normalize_text(text)
+    tokens = set(normalized.split())
+    if tokens & TURKISH_HINTS:
+        return True
+
+    return any(
+        phrase in normalized
+        for phrase in {
+            "hangi model",
+            "hangi modelsin",
+            "sen kimsin",
+            "ne yapiyorsun",
+            "yardimci olur musun",
+        }
+    )
+
+
+class GeminiService:
     def __init__(self, api_key: str, model: str) -> None:
         self.api_key = api_key
         self.model = model
@@ -88,7 +105,17 @@ class GemmaService:
         if direct:
             return direct
 
-        if any(token in normalized.split() for token in TURKISH_HINTS):
+        if any(phrase in normalized for phrase in {"hangi model", "hangi modelsin", "what model", "which model"}):
+            if is_turkish_like(query):
+                return f"Su anda AI servisine ulasamiyorum ama bu uygulama normalde {self.model} modeliyle calisiyor."
+            return f"I can't reach the AI service right now, but this app normally runs on the {self.model} model."
+
+        if any(phrase in normalized for phrase in {"kimsin", "sen kimsin", "who are you"}):
+            if is_turkish_like(query):
+                return "Ben bu uygulamadaki AI asistaniyim. Su anda AI servisine ulasamiyorum ama arama tarafinda yine yardimci olabilirim."
+            return "I'm the AI assistant in this app. I can't reach the AI service right now, but I can still help through search."
+
+        if is_turkish_like(query):
             return "Su anda AI servisine ulasamiyorum. Istersen aramayi acip tekrar deneyebilirsin."
 
         return "I can't reach the AI service right now. You can try again or turn on search for web results."
@@ -97,21 +124,20 @@ class GemmaService:
         if not self.api_key:
             return True
 
-        # Fast local check: common greetings and casual chat never need search
-        _no_search = {
+        no_search = {
             "merhaba", "selam", "nasilsin", "tesekkurler", "iyi gunler",
             "hello", "hi", "hey", "thanks", "thank you", "bye", "gunaydin",
             "iyi aksamlar", "hosca kal", "sag ol", "merhabalar",
         }
-        if normalize_text(query) in _no_search:
+        if normalize_text(query) in no_search:
             logger.info("needs_search for '%s': NO (local shortcut)", query)
             return False
 
         prompt = (
-            f'Is this a search query or casual conversation?\n'
-            f'<user_query>{query}</user_query>\n'
-            f'Reply YES if it needs internet search, NO if it\'s casual chat.\n'
-            f'Answer:'
+            f"Is this a search query or casual conversation?\n"
+            f"<user_query>{query}</user_query>\n"
+            f"Reply YES if it needs internet search, NO if it's casual chat.\n"
+            f"Answer:"
         )
 
         payload = {
@@ -127,7 +153,6 @@ class GemmaService:
             },
         }
 
-        # Use the fast lightweight model for classification
         url = API_URL.format(model=FAST_MODEL)
 
         try:
@@ -152,7 +177,6 @@ class GemmaService:
             return False
 
     async def select_sources(self, query: str) -> list[str]:
-        """Use Gemma to decide which sources to search for a given query."""
         if not self.api_key:
             return ["web"]
 
@@ -213,16 +237,20 @@ Answer:"""
             return ["web"]
 
     async def summarize(
-        self, query: str, results: list[dict], *, thinking: bool = False, search_performed: bool = True,
+        self,
+        query: str,
+        results: list[dict],
+        *,
+        thinking: bool = False,
+        search_performed: bool = True,
     ) -> str | None:
         if not self.api_key:
             logger.warning("Google AI API key not configured, skipping summary")
             return None
 
         thinking_prefix = "Think step by step carefully before answering.\n\n" if thinking else ""
-
         language_instruction = (
-            f'CRITICAL INSTRUCTION: You MUST detect the language of this query: <user_query>{query}</user_query>\n'
+            f"CRITICAL INSTRUCTION: You MUST detect the language of this query: <user_query>{query}</user_query>\n"
             "Then you MUST respond ENTIRELY in that exact same language.\n"
             "This rule applies to ALL languages without exception - Turkish, German, French, Spanish, "
             "Arabic, Japanese, Chinese, Korean, Russian, Portuguese, Italian, Dutch, Polish, or any other language.\n"
@@ -233,7 +261,7 @@ Answer:"""
             user_prompt = (
                 f"{language_instruction}\n\n"
                 f"{thinking_prefix}"
-                f'Answer this conversationally without search results: <user_query>{query}</user_query>\n'
+                f"Answer this conversationally without search results: <user_query>{query}</user_query>\n"
                 "Be friendly, direct, and concise (2-3 sentences max).\n"
                 "Do not show your reasoning. Do not use bullet points.\n\n"
                 f"{language_instruction}"
@@ -241,9 +269,9 @@ Answer:"""
         else:
             user_prompt = (
                 f"{language_instruction}\n\n"
-                f'{thinking_prefix}Search results for: <user_query>{query}</user_query>\n\n'
+                f"{thinking_prefix}Search results for: <user_query>{query}</user_query>\n\n"
                 f"{format_results(results)}\n\n"
-                f'Based only on the search results above, answer the question <user_query>{query}</user_query> in 2-3 sentences maximum.\n'
+                f"Based only on the search results above, answer the question <user_query>{query}</user_query> in 2-3 sentences maximum.\n"
                 "Be direct. Do not show your reasoning. Do not use bullet points. Do not repeat the question.\n"
                 'If results are not relevant, say: "No relevant results found for this query."\n\n'
                 f"{language_instruction}"
@@ -279,29 +307,28 @@ Answer:"""
                 resp.raise_for_status()
                 data = resp.json()
                 parts = data["candidates"][0]["content"]["parts"]
-                # Filter out thinking/reasoning parts (thought: true)
                 answer_parts = [p["text"] for p in parts if not p.get("thought")]
                 return answer_parts[-1] if answer_parts else parts[-1]["text"]
         except httpx.HTTPStatusError as exc:
             logger.error(
-                "Gemma API error: status=%s body=%s",
+                "Gemini API error: status=%s body=%s",
                 exc.response.status_code,
                 exc.response.text[:500],
             )
             return None
         except (httpx.RequestError, KeyError, IndexError) as exc:
-            logger.error("Gemma API request failed: %r", exc)
+            logger.error("Gemini API request failed: %r", exc)
             return None
 
 
-_service: GemmaService | None = None
+_service: GeminiService | None = None
 
 
-def get_gemma_service() -> GemmaService:
+def get_gemini_service() -> GeminiService:
     global _service
     if _service is None:
         settings = get_settings()
-        _service = GemmaService(
+        _service = GeminiService(
             api_key=settings.google_ai_api_key,
             model=settings.ai_model,
         )

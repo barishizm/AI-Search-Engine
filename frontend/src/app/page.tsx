@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase";
-import { search, saveConversation, saveMessage, getMessages } from "@/lib/api";
+import { search, saveConversation, saveMessage, getMessages, checkHealth } from "@/lib/api";
 import { SearchResult } from "@/types";
 import SearchInput from "@/components/SearchInput";
 import MessageBubble from "@/components/MessageBubble";
@@ -28,10 +28,19 @@ interface Message {
   status: "loading" | "done";
 }
 
+interface HealthState {
+  status: string;
+  chroma_connected: boolean;
+  doc_count: number;
+  ai_configured: boolean;
+  ai_model: string;
+}
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [health, setHealth] = useState<HealthState | null>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -56,6 +65,20 @@ export default function Home() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setHealth(null);
+      return;
+    }
+
+    checkHealth()
+      .then(setHealth)
+      .catch((error) => {
+        console.error("Failed to load health:", error);
+        setHealth(null);
+      });
+  }, [user]);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -280,8 +303,17 @@ export default function Home() {
           style={{ paddingLeft: sidebarWidth }}
         >
           <div className="w-full px-6 py-3 grid grid-cols-3 items-center">
-            {/* Left – empty placeholder */}
-            <div />
+            {/* Left – health badge */}
+            <div className="flex justify-start">
+              {health && (
+                <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-gray-300">
+                  <span className={`h-2 w-2 rounded-full ${health.ai_configured ? "bg-emerald-400" : "bg-amber-400"}`} />
+                  <span className="uppercase tracking-[0.16em]">{health.ai_configured ? "AI Ready" : "AI Fallback"}</span>
+                  <span className="text-gray-500">/</span>
+                  <span className="truncate text-gray-400">{health.ai_model}</span>
+                </div>
+              )}
+            </div>
             {/* Center – logo */}
             <button
               onClick={handleNewSearch}

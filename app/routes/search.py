@@ -9,7 +9,7 @@ from app.auth import get_current_user
 from app.config import get_settings
 from app.models.schemas import SearchRequest, SearchResponse, SearchResult
 from app.services.embedder import Embedder, get_embedder
-from app.services.gemma import GemmaService, get_gemma_service
+from app.services.gemini import GeminiService, get_gemini_service
 from app.services.ingestion import ingest_source
 from app.services.vector_store import VectorStore, get_vector_store
 from app.utils.sanitize import sanitize_query
@@ -29,17 +29,17 @@ async def search(
     user_id: str = Depends(get_current_user),
     embedder: Embedder = Depends(get_embedder),
     vector_store: VectorStore = Depends(get_vector_store),
-    gemma_service: GemmaService = Depends(get_gemma_service),
+    gemini_service: GeminiService = Depends(get_gemini_service),
 ) -> SearchResponse:
     body.query = sanitize_query(body.query)
 
     if not body.search:
-        ai_summary = await gemma_service.summarize(
+        ai_summary = await gemini_service.summarize(
             body.query, [], thinking=body.thinking, search_performed=False,
         )
         if not ai_summary:
             logger.warning("AI summary missing for conversational query=%r", body.query)
-            ai_summary = gemma_service.fallback_chat_response(body.query)
+            ai_summary = gemini_service.fallback_chat_response(body.query)
         return SearchResponse(
             query=body.query,
             results=[],
@@ -48,7 +48,7 @@ async def search(
             searched=False,
         )
 
-    selected = await gemma_service.select_sources(body.query)
+    selected = await gemini_service.select_sources(body.query)
 
     SOURCE_MAP = {
         "web": "brave_search",
@@ -103,7 +103,7 @@ async def search(
     settings = get_settings()
     if results and summary and settings.summary_enabled:
         result_dicts = [r.model_dump() for r in results[:5]]
-        ai_summary = await gemma_service.summarize(body.query, result_dicts, thinking=body.thinking)
+        ai_summary = await gemini_service.summarize(body.query, result_dicts, thinking=body.thinking)
 
     return SearchResponse(
         query=body.query,
