@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SearchResponse, Conversation, ConversationMessage } from "@/types";
+import { SearchResponse, Conversation, ConversationMessage, MessageHistory } from "@/types";
 import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -28,11 +28,13 @@ export async function search(
   query: string,
   thinking: boolean = false,
   performSearch: boolean = false,
+  history?: MessageHistory[],
 ): Promise<SearchResponse> {
   const { data } = await client.post<SearchResponse>("/search/", {
     query,
     thinking,
     search: performSearch,
+    history: history || [],
   });
   return data;
 }

@@ -32,10 +32,11 @@ async def search(
     gemini_service: GeminiService = Depends(get_gemini_service),
 ) -> SearchResponse:
     body.query = sanitize_query(body.query)
+    history = [{"query": m.query, "summary": m.summary} for m in body.history]
 
     if not body.search:
         ai_summary = await gemini_service.summarize(
-            body.query, [], thinking=body.thinking, search_performed=False,
+            body.query, [], thinking=body.thinking, search_performed=False, history=history,
         )
         if not ai_summary:
             logger.warning("AI summary missing for conversational query=%r", body.query)
@@ -103,7 +104,9 @@ async def search(
     settings = get_settings()
     if results and summary and settings.summary_enabled:
         result_dicts = [r.model_dump() for r in results[:5]]
-        ai_summary = await gemini_service.summarize(body.query, result_dicts, thinking=body.thinking)
+        ai_summary = await gemini_service.summarize(
+            body.query, result_dicts, thinking=body.thinking, history=history,
+        )
 
     return SearchResponse(
         query=body.query,

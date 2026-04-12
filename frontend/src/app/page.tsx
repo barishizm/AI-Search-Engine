@@ -120,7 +120,12 @@ export default function Home() {
       setMessages((prev) => [...prev, newMessage]);
 
       try {
-        const response = await search(query, thinking, performSearch);
+        const history = messages
+          .filter((m) => m.status === "done" && m.summary)
+          .slice(-3)
+          .map((m) => ({ query: m.query, summary: m.summary || "" }));
+
+        const response = await search(query, thinking, performSearch, history);
 
         setMessages((prev) =>
           prev.map((m) =>
@@ -170,7 +175,7 @@ export default function Home() {
         );
       }
     },
-    [user, ensureConversation],
+    [user, ensureConversation, messages],
   );
 
   const handleNewSearch = useCallback(() => {

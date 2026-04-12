@@ -243,6 +243,7 @@ Answer:"""
         *,
         thinking: bool = False,
         search_performed: bool = True,
+        history: list[dict] | None = None,
     ) -> str | None:
         if not self.api_key:
             logger.warning("Google AI API key not configured, skipping summary")
@@ -257,10 +258,19 @@ Answer:"""
             "Do NOT translate. Do NOT switch to English. Match the query language exactly."
         )
 
+        conversation_context = ""
+        if history:
+            conversation_context = "Previous conversation:\n"
+            for msg in history[-3:]:
+                conversation_context += (
+                    f"User: {msg['query']}\nAssistant: {msg['summary'][:200]}...\n\n"
+                )
+
         if not search_performed:
             user_prompt = (
                 f"{language_instruction}\n\n"
                 f"{thinking_prefix}"
+                f"{conversation_context}"
                 f"Answer this conversationally without search results: <user_query>{query}</user_query>\n"
                 "Be friendly, direct, and concise (2-3 sentences max).\n"
                 "Do not show your reasoning. Do not use bullet points.\n\n"
@@ -269,7 +279,9 @@ Answer:"""
         else:
             user_prompt = (
                 f"{language_instruction}\n\n"
-                f"{thinking_prefix}Search results for: <user_query>{query}</user_query>\n\n"
+                f"{thinking_prefix}"
+                f"{conversation_context}"
+                f"Search results for: <user_query>{query}</user_query>\n\n"
                 f"{format_results(results)}\n\n"
                 f"Based only on the search results above, answer the question <user_query>{query}</user_query> in 2-3 sentences maximum.\n"
                 "Be direct. Do not show your reasoning. Do not use bullet points. Do not repeat the question.\n"

@@ -29,6 +29,19 @@ export interface SearchResponse {
   searched: boolean;
 }
 
+export interface MessageHistory {
+  query: string;
+  summary: string;
+}
+
+export interface SearchRequest {
+  query: string;
+  top_k?: number;
+  thinking?: boolean;
+  search?: boolean;
+  history?: MessageHistory[];
+}
+
 export interface IngestRequest {
   query: string;
   sources: string[];

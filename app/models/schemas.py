@@ -1,11 +1,17 @@
 from pydantic import BaseModel, Field, field_validator
 
 
+class MessageHistory(BaseModel):
+    query: str
+    summary: str
+
+
 class SearchRequest(BaseModel):
     query: str = Field(max_length=1000)
     top_k: int = Field(default=5, ge=1, le=50)
     thinking: bool = False
     search: bool = False
+    history: list[MessageHistory] = []
 
     @field_validator("query")
     @classmethod
