@@ -1,12 +1,22 @@
-import { Button } from "@/components/ui/button";
+import { ChatApp } from "@/components/chat/chat-app";
+import { Landing } from "@/components/landing";
+import { createClient } from "@/lib/supabase/server";
 
-// Temporary placeholder while the app is rebuilt (replaced in Phase 5/6).
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+
+  if (!claims?.sub) {
+    return <Landing />;
+  }
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <h1 className="text-2xl font-semibold">Limited Search</h1>
-      <p className="text-muted-foreground">Rebuild in progress.</p>
-      <Button>It works</Button>
-    </div>
+    <ChatApp
+      user={{
+        id: claims.sub,
+        email: typeof claims.email === "string" ? claims.email : null,
+      }}
+    />
   );
 }
