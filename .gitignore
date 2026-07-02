@@ -1,112 +1,29 @@
-# ========================
-# Python
-# ========================
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
-*.whl
-*.manifest
-*.spec
-pip-log.txt
-pip-delete-this-directory.txt
+# dependencies
+/node_modules
 
-# Virtual environments
-venv/
-.venv/
-env/
-ENV/
+# next.js
+/.next/
+/out/
+next-env.d.ts
 
-# Distribution / packaging
-sdist/
-wheels/
+# production
+/build
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
+# misc
+.DS_Store
+*.pem
 
-# Type checking
-.mypy_cache/
-.pytype/
-
-# ========================
-# Node.js / Next.js
-# ========================
-node_modules/
-.next/
-out/
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-.pnpm-store/
 
-# ========================
-# ChromaDB local storage
-# ========================
-chroma_data/
-
-# ========================
-# Sentence-Transformers / ML model cache
-# ========================
-models/
-*.onnx
-*.bin
-*.safetensors
-
-# ========================
-# Environment variables
-# ========================
+# env files
 .env
-.env.local
-.env.*.local
+.env*.local
 
-# ========================
-# IDE / Editor
-# ========================
-.vscode/
-!.vscode/settings.json
-!.vscode/extensions.json
-.idea/
-*.swp
-*.swo
-*~
+# vercel
+.vercel
 
-# ========================
-# macOS
-# ========================
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-.Spotlight-V100
-.Trashes
-
-# ========================
-# Windows
-# ========================
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-*.lnk
-
-# ========================
-# Logs & runtime
-# ========================
-*.log
-logs/
-*.pid
-*.seed
-
-# ========================
-# Docker (local overrides)
-# ========================
-docker-compose.override.yml
+# typescript
+*.tsbuildinfo
