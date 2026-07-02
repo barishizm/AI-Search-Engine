@@ -1,66 +1,77 @@
-export interface SearchResultMetadata {
-  url?: string;
-  title?: string;
-  description?: string;
-  published?: string;
-  poster_path?: string;
-  vote_average?: number;
-  release_date?: string;
-  track_name?: string;
-  artist_name?: string;
-  album_name?: string;
-  spotify_url?: string;
-  preview_url?: string;
+export type SearchMode = "chat" | "search";
+
+/** A web source backing an answer, derived from Gemini grounding chunks. */
+export interface Source {
+  id: number;
+  title: string;
+  url: string;
+  domain: string;
 }
 
-export interface SearchResult {
-  id: string;
-  content: string;
-  source: "web" | "film" | "music";
-  score: number;
-  metadata: SearchResultMetadata;
+/** Character-index range of the answer supported by the given sources. */
+export interface CitationSupport {
+  start: number;
+  end: number;
+  sourceIds: number[];
 }
 
-export interface SearchResponse {
+export interface HistoryTurn {
+  role: "user" | "model";
+  text: string;
+}
+
+export interface SearchRequestBody {
   query: string;
-  results: SearchResult[];
-  total_found: number;
-  ai_summary: string | null;
-  searched: boolean;
+  mode: SearchMode;
+  thinking: boolean;
+  history: HistoryTurn[];
 }
 
-export interface MessageHistory {
-  query: string;
-  summary: string;
+export type StreamErrorCode =
+  | "unauthorized"
+  | "rate_limited"
+  | "quota_exhausted"
+  | "blocked"
+  | "timeout"
+  | "internal";
+
+export interface SourcesPayload {
+  sources: Source[];
+  searchQueries: string[];
+  searchSuggestionHtml: string | null;
 }
 
-export interface SearchRequest {
-  query: string;
-  top_k?: number;
-  thinking?: boolean;
-  search?: boolean;
-  history?: MessageHistory[];
-}
+/** Server-sent events emitted by POST /api/search. */
+export type StreamEvent =
+  | { type: "delta"; t: string }
+  | { type: "thought"; t: string }
+  | ({ type: "sources" } & SourcesPayload)
+  | { type: "citations"; supports: CitationSupport[] }
+  | { type: "done"; finishReason: string; searched: boolean }
+  | {
+      type: "error";
+      code: StreamErrorCode;
+      message: string;
+      retryAfterSec?: number;
+    };
 
-export interface IngestRequest {
-  query: string;
-  sources: string[];
-}
+// ── Supabase rows ──
 
 export interface Conversation {
   id: string;
-  title: string;
   user_id: string;
+  title: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface ConversationMessage {
+export interface StoredMessage {
   id: string;
   conversation_id: string;
   query: string;
   ai_summary: string | null;
-  results: SearchResult[];
+  results: Source[];
   thinking: boolean;
+  mode: SearchMode;
   created_at: string;
 }
