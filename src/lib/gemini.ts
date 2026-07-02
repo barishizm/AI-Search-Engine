@@ -5,7 +5,15 @@ import {
 } from "@google/genai";
 import type { HistoryTurn, SearchMode } from "@/types";
 
-export const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
+// Chat uses the newest flash; search uses 2.5-flash because Google Search
+// grounding has free-tier quota there (the 3.x family's grounding allowance
+// is not available on free-tier keys — first grounded call 429s).
+const CHAT_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
+const SEARCH_MODEL = process.env.GEMINI_SEARCH_MODEL ?? "gemini-2.5-flash";
+
+export function modelFor(mode: SearchMode): string {
+  return mode === "search" ? SEARCH_MODEL : CHAT_MODEL;
+}
 
 const MAX_HISTORY_TURNS = 6;
 const MAX_TURN_CHARS = 8_000;
@@ -32,17 +40,26 @@ export function buildContents(
 }
 
 export function buildConfig(
+  model: string,
   mode: SearchMode,
   thinking: boolean,
   abortSignal: AbortSignal,
 ): GenerateContentConfig {
+  // Gemini 3+ takes thinkingLevel; the 2.5 family takes thinkingBudget.
+  const thinkingConfig = /^gemini-[3-9]/.test(model)
+    ? {
+        thinkingLevel: thinking ? ThinkingLevel.HIGH : ThinkingLevel.LOW,
+        includeThoughts: thinking,
+      }
+    : {
+        thinkingBudget: thinking ? -1 : 0,
+        includeThoughts: thinking,
+      };
+
   return {
     systemInstruction: SYSTEM_PROMPT,
     ...(mode === "search" ? { tools: [{ googleSearch: {} }] } : {}),
-    thinkingConfig: {
-      thinkingLevel: thinking ? ThinkingLevel.HIGH : ThinkingLevel.LOW,
-      includeThoughts: thinking,
-    },
+    thinkingConfig,
     abortSignal,
   };
 }

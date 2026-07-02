@@ -1,5 +1,5 @@
 import { GoogleGenAI, type GroundingMetadata } from "@google/genai";
-import { buildConfig, buildContents, GEMINI_MODEL } from "@/lib/gemini";
+import { buildConfig, buildContents, modelFor } from "@/lib/gemini";
 import { mapSources, mapSupports } from "@/lib/grounding";
 import { consumeRateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
@@ -137,10 +137,11 @@ export async function POST(request: Request) {
       let finishReason = "STOP";
 
       try {
+        const model = modelFor(mode);
         const responses = await ai.models.generateContentStream({
-          model: GEMINI_MODEL,
+          model,
           contents: buildContents(history, query),
-          config: buildConfig(mode, thinking, abort),
+          config: buildConfig(model, mode, thinking, abort),
         });
 
         for await (const chunk of responses) {
