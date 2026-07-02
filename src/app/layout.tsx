@@ -1,27 +1,21 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { Suspense } from "react";
-import AuthCodeHandler from "@/components/auth/AuthCodeHandler";
-import SessionTimeoutManager from "@/components/auth/SessionTimeoutManager";
+import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const geistSans = Geist({ subsets: ["latin"], variable: "--font-sans" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Limited Search — AI-Powered Search Engine",
+    default: "Limited Search — AI-Powered Search",
     template: "%s | Limited Search",
   },
   description:
-    "Search across the web, films, and music with AI. Get instant answers powered by Gemini AI, Brave Search, TMDB, and Spotify.",
-  keywords: [
-    "AI search engine",
-    "web search",
-    "film search",
-    "music search",
-    "Gemini AI",
-    "universal search",
-  ],
+    "Ask anything and get cited, up-to-date answers from the web — powered by AI.",
+  keywords: ["AI search engine", "web search", "AI answers", "Limited Search"],
   authors: [{ name: "Limited Search" }],
   creator: "Limited Search",
   publisher: "Limited Search",
@@ -35,26 +29,18 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    locale: "tr_TR",
+    locale: "en_US",
     url: "https://www.limited-search.com",
     siteName: "Limited Search",
-    title: "Limited Search — AI-Powered Search Engine",
+    title: "Limited Search — AI-Powered Search",
     description:
-      "Search across the web, films, and music with AI. Get instant answers powered by Gemini AI.",
-    images: [
-      {
-        url: "https://www.limited-search.com/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Limited Search — AI-Powered Search Engine",
-      },
-    ],
+      "Ask anything and get cited, up-to-date answers from the web — powered by AI.",
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Limited Search — AI-Powered Search Engine",
-    description: "Search across the web, films, and music with AI.",
-    images: ["https://www.limited-search.com/og-image.png"],
+    card: "summary",
+    title: "Limited Search — AI-Powered Search",
+    description:
+      "Ask anything and get cited, up-to-date answers from the web — powered by AI.",
   },
   icons: {
     icon: [
@@ -78,15 +64,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.className} bg-[#212121] text-white antialiased`}
+        className={cn(
+          geistSans.variable,
+          geistMono.variable,
+          "font-sans antialiased",
+        )}
       >
-        <Suspense fallback={null}>
-          <AuthCodeHandler />
-        </Suspense>
-        <SessionTimeoutManager />
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
