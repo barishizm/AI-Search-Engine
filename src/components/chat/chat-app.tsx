@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import { Menu, PanelLeft } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -12,6 +12,29 @@ import { useChat } from "@/hooks/use-chat";
 import type { SearchMode } from "@/types";
 
 const SIDEBAR_STORAGE_KEY = "limited-search:sidebar-open";
+const SIDEBAR_CHANGE_EVENT = "limited-search:sidebar-change";
+
+function subscribeToSidebar(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(SIDEBAR_CHANGE_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(SIDEBAR_CHANGE_EVENT, callback);
+  };
+}
+
+function useSidebarOpen(): [boolean, (open: boolean) => void] {
+  const open = useSyncExternalStore(
+    subscribeToSidebar,
+    () => localStorage.getItem(SIDEBAR_STORAGE_KEY) !== "false",
+    () => true,
+  );
+  const setOpen = useCallback((next: boolean) => {
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
+    window.dispatchEvent(new Event(SIDEBAR_CHANGE_EVENT));
+  }, []);
+  return [open, setOpen];
+}
 
 export function ChatApp({
   user,
@@ -21,20 +44,8 @@ export function ChatApp({
   const chat = useChat(user.id);
   const [mode, setMode] = useState<SearchMode>("search");
   const [thinking, setThinking] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useSidebarOpen();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setSidebarOpen(localStorage.getItem(SIDEBAR_STORAGE_KEY) !== "false");
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) {
-      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarOpen));
-    }
-  }, [sidebarOpen, hydrated]);
 
   const empty = chat.messages.length === 0;
 

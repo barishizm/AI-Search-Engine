@@ -15,7 +15,6 @@ export function MessageList({ messages }: { messages: ChatMessage[] }) {
       behavior: "smooth",
       block: "end",
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length, lastMessage?.status]);
 
   return (

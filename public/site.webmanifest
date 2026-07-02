@@ -1,11 +1,11 @@
 {
   "name": "Limited Search",
   "short_name": "Limited Search",
-  "description": "AI-Powered Search Engine",
+  "description": "Ask anything and get cited, up-to-date answers from the web — powered by AI.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#212121",
-  "theme_color": "#8b5cf6",
+  "background_color": "#ffffff",
+  "theme_color": "#7c3aed",
   "icons": [
     {
       "src": "/icon-192x192.png",

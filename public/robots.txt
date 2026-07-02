@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /search?*
+Disallow: /api/
 Sitemap: https://www.limited-search.com/sitemap.xml
