@@ -48,6 +48,17 @@ export default function RegisterPage() {
       router.refresh();
       return;
     }
+    // When email confirmation is on, Supabase returns a user with an empty
+    // `identities` array for an address that is already registered (instead of
+    // an error, to prevent enumeration). Don't claim we sent an email in that
+    // case — the user needs to sign in or reset their password.
+    if (data.user && data.user.identities?.length === 0) {
+      setError(
+        "This email is already registered. Try signing in, or reset your password.",
+      );
+      setLoading(false);
+      return;
+    }
     setSent(true);
     setLoading(false);
   }
