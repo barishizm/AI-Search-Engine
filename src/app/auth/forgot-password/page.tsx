@@ -2,113 +2,92 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mail } from "lucide-react";
-import AuthShell from "@/components/auth/AuthShell";
-import styles from "@/app/auth/auth.module.css";
-import { createClient } from "@/lib/supabase";
+import { MailCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [sent, setSent] = useState(false);
 
-  const handleResetRequest = async (e: React.FormEvent<HTMLFormElement>) => {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     const supabase = createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/update-password`,
+      redirectTo: `${location.origin}/auth/callback?next=/auth/update-password`,
     });
-
     if (error) {
       setError(error.message);
       setLoading(false);
       return;
     }
-
-    setSuccess(true);
+    setSent(true);
     setLoading(false);
-  };
+  }
+
+  if (sent) {
+    return (
+      <AuthShell
+        title="Check your email"
+        description={`If an account exists for ${email}, a reset link is on its way.`}
+        footer={
+          <Link
+            href="/auth/login"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
+            Back to sign in
+          </Link>
+        }
+      >
+        <div className="flex flex-col items-center gap-3 py-4 text-center">
+          <MailCheck className="size-10 text-primary" />
+          <p className="text-sm text-muted-foreground">
+            Follow the link in the email to set a new password.
+          </p>
+        </div>
+      </AuthShell>
+    );
+  }
 
   return (
     <AuthShell
-      title={success ? "Check your email" : "Recover Password"}
-      subtitle={
-        success
-          ? "Use the recovery link from your inbox to choose a new password."
-          : "Enter the email address connected to your account."
+      title="Reset your password"
+      description="We'll email you a link to set a new one"
+      footer={
+        <Link
+          href="/auth/login"
+          className="font-medium text-foreground underline-offset-4 hover:underline"
+        >
+          Back to sign in
+        </Link>
       }
     >
-      {error ? (
-        <div className={`${styles.message} ${styles.errorMessage}`}>{error}</div>
-      ) : null}
-
-      {success ? (
-        <>
-          <div className={`${styles.message} ${styles.successMessage}`}>
-            If an account exists for <strong>{email}</strong>, a password reset
-            link is on its way.
-          </div>
-
-          <div className={styles.buttonRow}>
-            <Link
-              className={`${styles.actionButton} ${styles.primaryButton}`}
-              href="/auth/login"
-            >
-              Back to Login
-            </Link>
-            <Link
-              className={`${styles.actionButton} ${styles.secondaryButton}`}
-              href="/auth/register"
-            >
-              Sign Up
-            </Link>
-          </div>
-        </>
-      ) : (
-        <form className={styles.form} onSubmit={handleResetRequest}>
-          <div className={styles.field}>
-            <span className={styles.fieldIcon}>
-              <Mail size={18} />
-            </span>
-            <input
-              autoComplete="email"
-              className={styles.inputField}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              required
-              type="email"
-              value={email}
-            />
-          </div>
-
-          <div className={styles.buttonRow}>
-            <button
-              className={`${styles.actionButton} ${styles.primaryButton}`}
-              disabled={loading}
-              type="submit"
-            >
-              {loading ? "Sending..." : "Send Link"}
-            </button>
-            <Link
-              className={`${styles.actionButton} ${styles.secondaryButton}`}
-              href="/auth/login"
-            >
-              Login
-            </Link>
-          </div>
-        </form>
-      )}
-
-      <p className={styles.footnote}>
-        Need an account instead?{" "}
-        <Link className={styles.inlineLink} href="/auth/register">
-          Create one here
-        </Link>
-      </p>
+      <form onSubmit={onSubmit} className="space-y-3">
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="text-sm font-medium">
+            Email
+          </label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+          />
+        </div>
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Sending…" : "Send reset link"}
+        </Button>
+      </form>
     </AuthShell>
   );
 }
