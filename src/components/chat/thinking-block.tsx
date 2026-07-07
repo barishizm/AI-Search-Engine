@@ -31,7 +31,7 @@ export function ThinkingBlock({
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-2 border-l-2 border-border pl-3 text-sm leading-6 text-muted-foreground">
+        <div className="mt-2 border-l-2 border-border pl-3 font-mono text-xs leading-relaxed text-muted-foreground">
           <p className="whitespace-pre-wrap">{thoughts}</p>
         </div>
       </CollapsibleContent>

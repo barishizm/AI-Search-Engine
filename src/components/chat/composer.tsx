@@ -46,7 +46,7 @@ export function Composer({
   }
 
   return (
-    <div className="rounded-2xl border bg-card shadow-sm transition-shadow focus-within:shadow-md">
+    <div className="rounded-lg border bg-card transition-colors focus-within:border-ring">
       <textarea
         ref={textareaRef}
         value={value}

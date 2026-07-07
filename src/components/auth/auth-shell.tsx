@@ -20,7 +20,7 @@ export function AuthShell({
             <Logo className="text-lg" />
           </Link>
         </div>
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="rounded-lg border bg-card p-6 shadow-sm">
           <div className="mb-6 space-y-1.5 text-center">
             <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
             {description ? (

@@ -1,23 +1,20 @@
 import Link from "next/link";
-import { ArrowRight, Globe, History, Quote } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 
 const features = [
   {
-    icon: Globe,
-    title: "Live web answers",
+    label: "Live",
     text: "Every search runs against the live web through Google Search grounding — no stale index.",
   },
   {
-    icon: Quote,
-    title: "Cited, not invented",
+    label: "Cited",
     text: "Answers carry numbered citations you can click through to the original sources.",
   },
   {
-    icon: History,
-    title: "Your history, yours",
+    label: "Yours",
     text: "Conversations are saved to your private account and sync across devices.",
   },
 ];
@@ -25,7 +22,7 @@ const features = [
 export function Landing() {
   return (
     <div className="flex min-h-svh flex-col bg-background">
-      <nav className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4">
+      <nav className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-4">
         <Logo />
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
@@ -38,41 +35,45 @@ export function Landing() {
         </div>
       </nav>
 
-      <main className="flex flex-1 flex-col items-center justify-center px-4 py-16">
-        <div className="w-full max-w-2xl text-center">
+      <main className="flex flex-1 flex-col justify-center px-4 py-16">
+        <div className="mx-auto w-full max-w-3xl">
           <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
             Ask the web anything.
           </h1>
-          <p className="mx-auto mt-4 max-w-lg text-pretty text-muted-foreground sm:text-lg">
+          <p className="mt-4 max-w-md text-pretty text-muted-foreground sm:text-lg">
             Limited Search gives you live, cited answers from an AI that
             actually searches — in your language.
           </p>
 
           <Link
             href="/auth/register"
-            className="mt-8 block rounded-2xl border bg-card p-1.5 text-left shadow-sm transition-shadow hover:shadow-md"
+            className="mt-8 block max-w-md rounded-lg border bg-card p-1.5 text-left transition-colors hover:border-ring"
           >
             <div className="flex items-center gap-3 px-3 py-2.5">
               <span className="flex-1 text-[15px] text-muted-foreground">
                 Ask anything…
               </span>
-              <span className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <ArrowRight className="size-4" />
               </span>
             </div>
           </Link>
 
-          <div className="mt-16 grid gap-8 text-left sm:grid-cols-3">
+          <dl className="mt-16">
             {features.map((feature) => (
-              <div key={feature.title} className="space-y-2">
-                <feature.icon className="size-5 text-primary" />
-                <h2 className="text-sm font-semibold">{feature.title}</h2>
-                <p className="text-sm leading-6 text-muted-foreground">
+              <div
+                key={feature.label}
+                className="grid grid-cols-[5rem_1fr] gap-4 border-t py-4 first:border-t"
+              >
+                <dt className="text-sm font-medium text-foreground">
+                  {feature.label}
+                </dt>
+                <dd className="text-sm leading-6 text-muted-foreground">
                   {feature.text}
-                </p>
+                </dd>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
       </main>
 
