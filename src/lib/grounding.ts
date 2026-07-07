@@ -63,14 +63,18 @@ export function mapSupports(
 
   for (const support of groundingSupports) {
     const segment = support.segment;
-    if (segment?.startIndex == null || segment?.endIndex == null) continue;
+    if (!segment) continue;
 
     let start: number | undefined =
-      segment.startIndex >= 0 && segment.startIndex < byteToChar.length
+      segment.startIndex != null &&
+      segment.startIndex >= 0 &&
+      segment.startIndex < byteToChar.length
         ? byteToChar[segment.startIndex]
         : undefined;
     let end: number | undefined =
-      segment.endIndex >= 0 && segment.endIndex < byteToChar.length
+      segment.endIndex != null &&
+      segment.endIndex >= 0 &&
+      segment.endIndex < byteToChar.length
         ? byteToChar[segment.endIndex]
         : undefined;
 
