@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CITATION_HREF_PREFIX, injectCitations } from "@/lib/citations";
 import type { ChatMessage } from "@/hooks/use-chat";
+import { FeedbackDialog } from "@/components/chat/feedback-dialog";
 import { SourcesRow, sourceElementId } from "@/components/chat/sources-row";
 import { ThinkingBlock } from "@/components/chat/thinking-block";
 
@@ -34,10 +35,14 @@ export function AssistantMessage({
   message,
   onRetry,
   retryDisabled,
+  userId,
+  conversationId,
 }: {
   message: ChatMessage;
   onRetry?: (id: string) => void;
   retryDisabled?: boolean;
+  userId: string;
+  conversationId: string | null;
 }) {
   const [highlightedId, setHighlightedId] = useState<number | null>(null);
   const streaming = message.status === "streaming";
@@ -142,6 +147,14 @@ export function AssistantMessage({
           sources={message.sources}
           searchSuggestionHtml={message.searchSuggestionHtml}
           highlightedId={highlightedId}
+        />
+      ) : null}
+
+      {message.status === "done" && message.answer ? (
+        <FeedbackDialog
+          userId={userId}
+          conversationId={conversationId}
+          messageId={message.id}
         />
       ) : null}
     </div>

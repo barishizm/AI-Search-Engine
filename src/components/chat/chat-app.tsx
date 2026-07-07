@@ -158,6 +158,8 @@ export function ChatApp({
                 messages={chat.messages}
                 onRetry={chat.retry}
                 retryDisabled={chat.isStreaming}
+                userId={user.id}
+                conversationId={chat.activeConversationId}
               />
             </main>
             <div className="shrink-0 px-4 pb-4">

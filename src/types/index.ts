@@ -75,3 +75,12 @@ export interface StoredMessage {
   mode: SearchMode;
   created_at: string;
 }
+
+export interface Feedback {
+  id: string;
+  user_id: string;
+  conversation_id: string | null;
+  message_id: string | null;
+  note: string | null;
+  created_at: string;
+}

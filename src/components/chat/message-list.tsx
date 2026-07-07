@@ -9,10 +9,14 @@ export function MessageList({
   messages,
   onRetry,
   retryDisabled,
+  userId,
+  conversationId,
 }: {
   messages: ChatMessage[];
   onRetry?: (id: string) => void;
   retryDisabled?: boolean;
+  userId: string;
+  conversationId: string | null;
 }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastMessage = messages[messages.length - 1];
@@ -34,6 +38,8 @@ export function MessageList({
             message={message}
             onRetry={onRetry}
             retryDisabled={retryDisabled}
+            userId={userId}
+            conversationId={conversationId}
           />
         </div>
       ))}
