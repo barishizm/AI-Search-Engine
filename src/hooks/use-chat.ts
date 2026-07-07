@@ -53,34 +53,14 @@ export function useChat(userId: string) {
     [],
   );
 
-  const submit = useCallback(
-    async (query: string, mode: SearchMode, thinking: boolean) => {
-      const localId = `local-${Date.now()}`;
-      const message: ChatMessage = {
-        id: localId,
-        query,
-        answer: "",
-        thoughts: "",
-        sources: [],
-        supports: [],
-        searchSuggestionHtml: null,
-        mode,
-        thinking,
-        searched: false,
-        status: "streaming",
-      };
-
-      let history: HistoryTurn[] = [];
-      setMessages((prev) => {
-        history = prev
-          .filter((m) => m.status === "done" && m.answer)
-          .slice(-3)
-          .flatMap((m): HistoryTurn[] => [
-            { role: "user", text: m.query },
-            { role: "model", text: m.answer },
-          ]);
-        return [...prev, message];
-      });
+  const runStream = useCallback(
+    async (
+      localId: string,
+      query: string,
+      mode: SearchMode,
+      thinking: boolean,
+      history: HistoryTurn[],
+    ) => {
       setIsStreaming(true);
 
       const finalize = async (searched: boolean) => {
@@ -164,6 +144,78 @@ export function useChat(userId: string) {
     [patchMessage, userId],
   );
 
+  const submit = useCallback(
+    async (query: string, mode: SearchMode, thinking: boolean) => {
+      const localId = `local-${Date.now()}`;
+      const message: ChatMessage = {
+        id: localId,
+        query,
+        answer: "",
+        thoughts: "",
+        sources: [],
+        supports: [],
+        searchSuggestionHtml: null,
+        mode,
+        thinking,
+        searched: false,
+        status: "streaming",
+      };
+
+      let history: HistoryTurn[] = [];
+      setMessages((prev) => {
+        history = prev
+          .filter((m) => m.status === "done" && m.answer)
+          .slice(-3)
+          .flatMap((m): HistoryTurn[] => [
+            { role: "user", text: m.query },
+            { role: "model", text: m.answer },
+          ]);
+        return [...prev, message];
+      });
+
+      await runStream(localId, query, mode, thinking, history);
+    },
+    [runStream],
+  );
+
+  const retry = useCallback(
+    async (id: string) => {
+      let target: ChatMessage | undefined;
+      let history: HistoryTurn[] = [];
+      setMessages((prev) => {
+        const idx = prev.findIndex((m) => m.id === id);
+        if (idx === -1) return prev;
+        target = prev[idx];
+        history = prev
+          .slice(0, idx)
+          .filter((m) => m.status === "done" && m.answer)
+          .slice(-3)
+          .flatMap((m): HistoryTurn[] => [
+            { role: "user", text: m.query },
+            { role: "model", text: m.answer },
+          ]);
+        return prev.map((m) =>
+          m.id === id
+            ? {
+                ...m,
+                answer: "",
+                thoughts: "",
+                sources: [],
+                supports: [],
+                searchSuggestionHtml: null,
+                searched: false,
+                status: "streaming" as const,
+                errorMessage: undefined,
+              }
+            : m,
+        );
+      });
+      if (!target) return;
+      await runStream(id, target.query, target.mode, target.thinking, history);
+    },
+    [runStream],
+  );
+
   const loadConversation = useCallback(async (conversationId: string) => {
     setActiveConversationId(conversationId);
     conversationIdRef.current = conversationId;
@@ -211,6 +263,7 @@ export function useChat(userId: string) {
     activeConversationId,
     conversationsVersion,
     submit,
+    retry,
     loadConversation,
     newChat,
     onConversationDeleted,

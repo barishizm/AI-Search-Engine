@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { Streamdown } from "streamdown";
 import type { ComponentProps } from "react";
-import { Globe, TriangleAlert } from "lucide-react";
+import { Globe, RotateCw, TriangleAlert } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CITATION_HREF_PREFIX, injectCitations } from "@/lib/citations";
 import type { ChatMessage } from "@/hooks/use-chat";
@@ -29,7 +30,15 @@ function CitationChip({
   );
 }
 
-export function AssistantMessage({ message }: { message: ChatMessage }) {
+export function AssistantMessage({
+  message,
+  onRetry,
+  retryDisabled,
+}: {
+  message: ChatMessage;
+  onRetry?: (id: string) => void;
+  retryDisabled?: boolean;
+}) {
   const [highlightedId, setHighlightedId] = useState<number | null>(null);
   const streaming = message.status === "streaming";
 
@@ -69,7 +78,22 @@ export function AssistantMessage({ message }: { message: ChatMessage }) {
     return (
       <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-sm text-destructive">
         <TriangleAlert className="mt-0.5 size-4 shrink-0" />
-        <p>{message.errorMessage ?? "Something went wrong."}</p>
+        <div className="flex-1 space-y-2">
+          <p>{message.errorMessage ?? "Something went wrong."}</p>
+          {onRetry ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              disabled={retryDisabled}
+              onClick={() => onRetry(message.id)}
+            >
+              <RotateCw className="size-3.5" />
+              Retry
+            </Button>
+          ) : null}
+        </div>
       </div>
     );
   }

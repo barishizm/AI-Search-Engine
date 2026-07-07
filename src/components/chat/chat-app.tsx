@@ -138,7 +138,11 @@ export function ChatApp({
         ) : (
           <>
             <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-              <MessageList messages={chat.messages} />
+              <MessageList
+                messages={chat.messages}
+                onRetry={chat.retry}
+                retryDisabled={chat.isStreaming}
+              />
             </main>
             <div className="shrink-0 px-4 pb-4">
               <div className="mx-auto w-full max-w-3xl">{composer}</div>

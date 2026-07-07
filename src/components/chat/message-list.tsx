@@ -5,7 +5,15 @@ import { AssistantMessage } from "@/components/chat/assistant-message";
 import { UserMessage } from "@/components/chat/user-message";
 import type { ChatMessage } from "@/hooks/use-chat";
 
-export function MessageList({ messages }: { messages: ChatMessage[] }) {
+export function MessageList({
+  messages,
+  onRetry,
+  retryDisabled,
+}: {
+  messages: ChatMessage[];
+  onRetry?: (id: string) => void;
+  retryDisabled?: boolean;
+}) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastMessage = messages[messages.length - 1];
 
@@ -22,7 +30,11 @@ export function MessageList({ messages }: { messages: ChatMessage[] }) {
       {messages.map((message) => (
         <div key={message.id} className="flex flex-col gap-4">
           <UserMessage query={message.query} thinking={message.thinking} />
-          <AssistantMessage message={message} />
+          <AssistantMessage
+            message={message}
+            onRetry={onRetry}
+            retryDisabled={retryDisabled}
+          />
         </div>
       ))}
       <div ref={bottomRef} className="h-px" />
