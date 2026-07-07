@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { Menu, PanelLeft } from "lucide-react";
+import { Download, Menu, PanelLeft } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Composer } from "@/components/chat/composer";
 import { MessageList } from "@/components/chat/message-list";
 import { useChat } from "@/hooks/use-chat";
+import { conversationToMarkdown, downloadMarkdown } from "@/lib/export";
 import type { SearchMode } from "@/types";
 
 const SIDEBAR_STORAGE_KEY = "limited-search:sidebar-open";
@@ -48,6 +49,11 @@ export function ChatApp({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const empty = chat.messages.length === 0;
+
+  function handleExport() {
+    const markdown = conversationToMarkdown(chat.messages);
+    downloadMarkdown(markdown, `limited-search-${new Date().toISOString().slice(0, 10)}.md`);
+  }
 
   const composer = (
     <Composer
@@ -119,6 +125,16 @@ export function ChatApp({
             </button>
           )}
           <div className="flex-1" />
+          {!empty ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleExport}
+              aria-label="Export conversation as Markdown"
+            >
+              <Download className="size-4" />
+            </Button>
+          ) : null}
           {!sidebarOpen ? <ThemeToggle /> : <span className="md:hidden"><ThemeToggle /></span>}
         </header>
 
