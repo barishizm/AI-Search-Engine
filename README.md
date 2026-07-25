@@ -13,7 +13,7 @@ Browser ── SSE ──> POST /api/search (Next.js route handler on Vercel)
                      ├─ Supabase Auth (cookie session, getClaims)
                      ├─ Postgres rate limiter (consume_rate_limit RPC)
                      └─ Gemini generateContentStream
-                          └─ googleSearch tool (grounding + citations)
+                          └─ googleSearch tool (grounding + citations).
 
 Browser ──────────> Supabase Postgres (conversations & messages, RLS)
 ```
