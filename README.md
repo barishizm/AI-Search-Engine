@@ -11,7 +11,7 @@ Everything runs in a single Next.js app — there is no separate backend.
 ```text
 Browser ── SSE ──> POST /api/search (Next.js route handler on Vercel)
                      ├─ Supabase Auth (cookie session, getClaims)
-                     ├─ Postgres rate limiter (consume_rate_limit RPC)
+                     ├─ Postgres rate limiter (consume_rate_limit RPC).
                      └─ Gemini generateContentStream.
                           └─ googleSearch tool (grounding + citations).
 
