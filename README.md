@@ -46,7 +46,7 @@ Browser ──────────> Supabase Postgres (conversations & messa
 Everything runs on free tiers: Vercel Hobby, Supabase Free, and the Gemini
 API free tier (Flash requests plus a monthly grounding allowance).
 
-## Development
+## Development:
 
 ```bash
 npm install
